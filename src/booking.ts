@@ -1337,12 +1337,7 @@ checkout?.addEventListener('change', () => {
    STEP 2 - CHECK AVAILABILITY FROM SUPABASE
 ======================================== */
 
-interface Booking {
-  room_type: string
-  check_in: string
-  check_out: string
-  booking_status: string
-}
+
 
 /*
   A pending or confirmed booking blocks overlapping dates.
@@ -1905,14 +1900,15 @@ document
 
   })
 
-
+const bookingForm =
+  document.querySelector<HTMLFormElement>('#bookingForm')
   /* ========================================
    STEP 10 - BOOKING CONFIRMATION
 ======================================== */
 
 bookingForm?.addEventListener(
   'submit',
-  async (event) => {
+  async (event: SubmitEvent) => {
 
     event.preventDefault()
 
