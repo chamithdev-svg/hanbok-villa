@@ -1322,7 +1322,7 @@ if (introScreen && introVideo && introEnter) {
 
       videoSrc = isMobile
         ? "./images/new-year-video-mobile.mp4"
-        : "/images/new-year-video.mp4";
+        : "./images/new-year-video.mp4";
 
     }
 
@@ -1331,7 +1331,7 @@ if (introScreen && introVideo && introEnter) {
 
       videoSrc = isMobile
         ? "./images/christmas-video-mobile.mp4"
-        : "/images/christmas-video.mp4";
+        : "./images/christmas-video.mp4";
 
     }
 

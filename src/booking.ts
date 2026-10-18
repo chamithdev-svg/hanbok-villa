@@ -1069,7 +1069,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <a href="#about">About Villa</a>
       <a href="#rooms">Rooms</a>
       <a href="gallery.html">GALLERY</a>
-      <a href="/explore.html">
+      <a href="./explore.html">
           Explore Sri Lanka
         </a>
       <a href="booking.html">Contact</a>
