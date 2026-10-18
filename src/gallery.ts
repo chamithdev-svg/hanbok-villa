@@ -13,7 +13,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
     <a href="/" class="logo">
 
       <img
-        src="/images/logo.jpg"
+        src="./images/logo.jpg"
         alt="HANEUL Villa Logo"
         class="logo-image"
       >
@@ -35,8 +35,8 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
       <a href="/#rooms">ROOMS</a>
 
-      <a href="/gallery.html" class="active">GALLERY</a>
-      <a href="/explore.html">EXPLORE SRI LANKA</a>
+      <a href="./gallery.html" class="active">GALLERY</a>
+      <a href="./explore.html">EXPLORE SRI LANKA</a>
 
       <a href="/#contact">CONTACT</a>
 
@@ -271,7 +271,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
         <a href="/">Home</a>
         <a href="/#about">About Villa</a>
         <a href="/#rooms">Rooms</a>
-        <a href="/explore.html">
+        <a href="./explore.html">
           Explore Sri Lanka
         </a>
         <a href="/#contact">Contact</a>

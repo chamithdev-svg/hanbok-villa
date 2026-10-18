@@ -19,7 +19,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <a href="/" class="booking-logo">
 
         <img
-          src="/images/logo.jpg"
+          src="./images/logo.jpg"
           alt="HANBOK Villa Logo"
         >
 

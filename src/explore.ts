@@ -12,7 +12,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
     <a href="/" class="logo">
 
       <img
-        src="/images/logo.jpg"
+        src="./images/logo.jpg"
         alt="HANBOK Villa Logo"
         class="logo-image"
       >
@@ -34,9 +34,9 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
       <a href="/#rooms">ROOMS</a>
 
-      <a href="/gallery.html">GALLERY</a>
+      <a href="./gallery.html">GALLERY</a>
 
-      <a href="/explore.html" class="active">
+      <a href="./explore.html" class="active">
         EXPLORE SRI LANKA
       </a>
 
@@ -48,7 +48,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
     <!-- NAVIGATION ACTIONS -->
     <div class="nav-actions">
 
-      <a href="/booking.html" class="book-btn">
+      <a href="./booking.html" class="book-btn">
         BOOK NOW
       </a>
 
@@ -141,7 +141,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/hikkaduwa.jpg"
+            src="./images/explore/hikkaduwa.jpg"
             alt="Hikkaduwa Beach"
           >
 
@@ -178,7 +178,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/galle.jpg"
+            src="./images/explore/galle.jpg"
             alt="Galle Fort"
           >
 
@@ -215,7 +215,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/unawatuna.jpg"
+            src="./images/explore/unawatuna.jpg"
             alt="Unawatuna Beach"
           >
 
@@ -252,7 +252,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/mirissa.jpg"
+            src="./images/explore/mirissa.jpg"
             alt="Mirissa Beach"
           >
 
@@ -289,7 +289,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/bentota.jpg"
+            src="./images/explore/bentota.jpg"
             alt="Bentota Beach"
           >
 
@@ -360,7 +360,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/ella.jpg"
+            src="./images/explore/ella.jpg"
             alt="Ella Sri Lanka"
           >
 
@@ -396,7 +396,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/nuwara-eliya.jpg"
+            src="./images/explore/nuwara-eliya.jpg"
             alt="Nuwara Eliya"
           >
 
@@ -432,7 +432,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/kandy.jpg"
+            src="./images/explore/kandy.jpg"
             alt="Kandy Sri Lanka"
           >
 
@@ -503,7 +503,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/sigiriya.jpg"
+            src="./images/explore/sigiriya.jpg"
             alt="Sigiriya Rock"
           >
 
@@ -575,7 +575,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/yala.jpg"
+            src="./images/explore/yala.jpg"
             alt="Yala National Park"
           >
 
@@ -646,7 +646,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
         <div class="destination-image">
 
           <img
-            src="/images/explore/arugam%20beach.jpg"
+            src="./images/explore/arugam%20beach.jpg"
             alt="Arugam Bay Beach"
           >
 
@@ -706,7 +706,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
       </p>
 
       <a
-        href="/booking.html"
+        href="./booking.html"
         class="explore-cta-btn"
       >
         PLAN YOUR STAY →
@@ -731,7 +731,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
       <div class="gold-line"></div>
       <p id="modalDescription"></p>
 
-      <a href="/booking.html" class="book-btn modal-book-btn">
+      <a href="./booking.html" class="book-btn modal-book-btn">
         PLAN YOUR STAY
       </a>
     </div>
@@ -820,11 +820,11 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
           Rooms
         </a>
 
-        <a href="/gallery.html">
+        <a href="./gallery.html">
           Gallery
         </a>
 
-        <a href="/explore.html">
+        <a href="./explore.html">
           Explore Sri Lanka
         </a>
 
@@ -940,7 +940,7 @@ const destinationData: Record<string, {
   Hikkaduwa: {
     region: "SOUTH COAST",
     title: "Hikkaduwa",
-    image: "/images/explore/hikkaduwa.jpg",
+    image: "./images/explore/hikkaduwa.jpg",
     description:
       "A beautiful coastal town famous for its golden beaches, coral reefs, tropical atmosphere and unforgettable ocean experiences."
   },
@@ -948,7 +948,7 @@ const destinationData: Record<string, {
   Galle: {
     region: "SOUTH COAST",
     title: "Galle",
-    image: "/images/explore/galle.jpg",
+    image: "./images/explore/galle.jpg",
     description:
       "Discover the historic Galle Fort, charming colonial streets, beautiful architecture and the relaxed atmosphere of Sri Lanka's southern coast."
   },
@@ -956,7 +956,7 @@ const destinationData: Record<string, {
   Unawatuna: {
     region: "SOUTH COAST",
     title: "Unawatuna",
-    image: "/images/explore/unawatuna.jpg",
+    image: "./images/explore/unawatuna.jpg",
     description:
       "A tropical beach destination with crystal-clear water, palm-lined shores, relaxing cafés and beautiful sunsets."
   },
@@ -964,7 +964,7 @@ const destinationData: Record<string, {
   Mirissa: {
     region: "SOUTH COAST",
     title: "Mirissa",
-    image: "/images/explore/mirissa.jpg",
+    image: "./images/explore/mirissa.jpg",
     description:
       "Enjoy one of Sri Lanka's most beautiful beaches, spectacular sunsets and exciting whale-watching experiences."
   },
@@ -972,7 +972,7 @@ const destinationData: Record<string, {
   Bentota: {
     region: "SOUTH COAST",
     title: "Bentota",
-    image: "/images/explore/bentota.jpg",
+    image: "./images/explore/bentota.jpg",
     description:
       "A peaceful coastal escape offering beautiful beaches, water activities, river adventures and luxury experiences."
   },
@@ -980,7 +980,7 @@ const destinationData: Record<string, {
   Ella: {
     region: "HILL COUNTRY",
     title: "Ella",
-    image: "/images/explore/ella.jpg",
+    image: "./images/explore/ella.jpg",
     description:
       "Surrounded by green mountains, tea plantations and waterfalls, Ella is perfect for scenic train journeys and nature adventures."
   },
@@ -988,7 +988,7 @@ const destinationData: Record<string, {
   "Nuwara Eliya": {
     region: "HILL COUNTRY",
     title: "Nuwara Eliya",
-    image: "/images/explore/nuwara-eliya.jpg",
+    image: "./images/explore/nuwara-eliya.jpg",
     description:
       "Known as Little England, Nuwara Eliya offers cool weather, beautiful tea estates, misty mountains and peaceful landscapes."
   },
@@ -996,7 +996,7 @@ const destinationData: Record<string, {
   Kandy: {
     region: "HILL COUNTRY",
     title: "Kandy",
-    image: "/images/explore/kandy.jpg",
+    image: "./images/explore/kandy.jpg",
     description:
       "Explore Sri Lanka's cultural heart, home to the Temple of the Sacred Tooth Relic, Kandy Lake and beautiful surrounding hills."
   },
@@ -1004,7 +1004,7 @@ const destinationData: Record<string, {
   Sigiriya: {
     region: "CULTURAL HERITAGE",
     title: "Sigiriya",
-    image: "/images/explore/sigiriya.jpg",
+    image: "./images/explore/sigiriya.jpg",
     description:
       "Visit the legendary Lion Rock fortress and experience one of Sri Lanka's most remarkable historical and cultural landmarks."
   },
@@ -1012,7 +1012,7 @@ const destinationData: Record<string, {
   Yala: {
     region: "WILDLIFE & NATURE",
     title: "Yala",
-    image: "/images/explore/yala.jpg",
+    image: "./images/explore/yala.jpg",
     description:
       "Experience an unforgettable safari surrounded by wild landscapes and the incredible wildlife of Yala National Park."
   },
@@ -1020,7 +1020,7 @@ const destinationData: Record<string, {
   "Arugam Bay": {
     region: "EAST COAST",
     title: "Arugam Bay",
-    image: "/images/explore/arugam%20beach.jpg",
+    image: "./images/explore/arugam%20beach.jpg",
     description:
       "A world-famous surfing destination with beautiful beaches, relaxed coastal vibes and unforgettable sunsets."
   }

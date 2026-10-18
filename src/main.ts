@@ -38,7 +38,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   muted
   playsinline
 >
-  <source src="/images/welcome-video.mp4" type="video/mp4">
+  <source src="./images/welcome-video.mp4" type="video/mp4">
 </video>
 
     <div class="intro-overlay"></div>
@@ -56,7 +56,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <main>
     <section class="hero">
       <video class="hero-video" autoplay muted loop playsinline>
-        <source src="/videos/galle-hero-video.mp4" type="video/mp4">
+        <source src="./videos/galle-hero-video.mp4" type="video/mp4">
       </video>
 
       <div class="hero-overlay"></div>
@@ -70,7 +70,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <!-- Villa Logo -->
   <div class="logo">
 
-  <img src="/images/logo.jpg" alt="HANBOK VILLA Logo" class="logo-image">
+  <img src="./images/logo.jpg" alt="HANBOK VILLA Logo" class="logo-image">
 
   <div class="logo-text">
     HANBOK VILLA
@@ -93,7 +93,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="nav-actions">
 
     <!-- Book Now button -->
-    <a href="/booking.html" class="book-btn">BOOK NOW</a>
+    <a href="./booking.html" class="book-btn">BOOK NOW</a>
 
     <!-- Mobile menu button -->
     <button class="menu-btn" id="menuBtn" aria-label="Open Menu">
@@ -137,7 +137,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <!-- Left side - Villa image -->
       <div class="about-image">
         <img
-          src="/images/villa-placeholder.jpg"
+          src="./images/villa-placeholder.jpg"
           alt="HANBOK Villa"
         >
       </div>
@@ -228,7 +228,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card">
 
     <div class="room-image">
-      <img src="/images/room1.jpg" alt="Room One">
+      <img src="./images/room1.jpg" alt="Room One">
     </div>
 
     <div class="room-info">
@@ -259,7 +259,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       </div>
 
-      <a href="/booking.html" class="room-btn">
+      <a href="./booking.html" class="room-btn">
         VIEW & BOOK
       </a>
 
@@ -277,7 +277,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card villa-card">
 
     <div class="room-image">
-      <img src="/images/entire-villa.jpg" alt="Entire Villa">
+      <img src="./images/entire-villa.jpg" alt="Entire Villa">
     </div>
 
     <div class="room-info">
@@ -307,7 +307,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       </div>
 
-      <a href="/booking.html" class="room-btn">
+      <a href="./booking.html" class="room-btn">
         VIEW & BOOK
       </a>
 
@@ -323,7 +323,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card large-group-card">
 
     <div class="room-image">
-      <img src="/images/large-group.jpg" alt="Large Group Stay">
+      <img src="./images/large-group.jpg" alt="Large Group Stay">
     </div>
 
     <div class="room-info">
@@ -344,7 +344,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         Contact us for availability
       </div>
 
-      <a href="/booking.html" class="room-btn">
+      <a href="./booking.html" class="room-btn">
         SEND REQUEST
       </a>
 
@@ -1002,7 +1002,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 </section>
 
 <div class="gallery-more">
-  <a href="/gallery.html" class="gallery-more-btn">
+  <a href="./gallery.html" class="gallery-more-btn">
     VIEW MORE PHOTOS →
   </a>
 </div>
@@ -1122,7 +1122,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <a href="#about">About Villa</a>
       <a href="#rooms">Rooms</a>
       <a href="gallery.html">GALLERY</a>
-      <a href="/explore.html">
+      <a href="./explore.html">
           Explore Sri Lanka
         </a>
       <a href="booking.html">Contact</a>
@@ -1314,14 +1314,14 @@ if (introScreen && introVideo && introEnter) {
     // Select Intro Video
     // ========================================
 
-    let videoSrc = "/images/welcome-video.mp4";
+    let videoSrc = "./images/welcome-video.mp4";
 
 
     // January 1 & 2 → New Year Video
     if (month === 1 && (day === 1 || day === 2)) {
 
       videoSrc = isMobile
-        ? "/images/new-year-video-mobile.mp4"
+        ? "./images/new-year-video-mobile.mp4"
         : "/images/new-year-video.mp4";
 
     }
@@ -1330,7 +1330,7 @@ if (introScreen && introVideo && introEnter) {
     else if (month === 12) {
 
       videoSrc = isMobile
-        ? "/images/christmas-video-mobile.mp4"
+        ? "./images/christmas-video-mobile.mp4"
         : "/images/christmas-video.mp4";
 
     }
@@ -1339,7 +1339,7 @@ if (introScreen && introVideo && introEnter) {
     else {
 
       videoSrc = isMobile
-        ? "/images/welcome-video-mobile.mp4"
+        ? "./images/welcome-video-mobile.mp4"
         : "/images/welcome-video.mp4";
 
     }
