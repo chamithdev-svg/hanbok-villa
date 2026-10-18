@@ -79,15 +79,17 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 </div>
 
-  <!-- Navigation links -->
-  <div class="nav-links" id="navLinks">
-    <a href="#home" class="active">HOME</a>
-    <a href="#about">ABOUT</a>
-    <a href="#rooms">ROOMS</a>
-    <a href="gallery.html">GALLERY</a>
-    <a href="/explore.html">EXPLORE SRI LANKA</a>
-    <a href="booking.html">CONTACT</a>
-  </div>
+ 
+<!-- Navigation links -->
+<div class="nav-links" id="navLinks">
+  <a href="./index.html#home" class="active">HOME</a>
+  <a href="./index.html#about">ABOUT</a>
+  <a href="./index.html#rooms">ROOMS</a>
+  <a href="./gallery.html">GALLERY</a>
+  <a href="./explore.html">EXPLORE SRI LANKA</a>
+  <a href="./booking.html">CONTACT</a>
+</div>
+
 
   <!-- Right side buttons -->
   <div class="nav-actions">

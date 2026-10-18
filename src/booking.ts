@@ -14,28 +14,28 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
          NAVIGATION
     ======================================== -->
 
-    <nav class="booking-nav">
+    
+<nav class="booking-nav">
 
-      <a href="/" class="booking-logo">
+  <a href="./index.html" class="booking-logo">
 
-        <img
-          src="./images/logo.jpg"
-          alt="HANBOK Villa Logo"
-        >
+    <img
+      src="./images/logo.jpg"
+      alt="HANBOK Villa Logo"
+    >
 
-        <div>
-          <span class="logo-title">HANBOK VILLA</span>
-          <span class="logo-location">SRI LANKA</span>
-        </div>
+    <div>
+      <span class="logo-title">HANBOK VILLA</span>
+      <span class="logo-location">SRI LANKA</span>
+    </div>
 
-      </a>
+  </a>
 
+  <a href="./index.html" class="back-home-btn">
+    ← BACK TO HOME
+  </a>
 
-      <a href="/" class="back-home-btn">
-        ← BACK TO HOME
-      </a>
-
-    </nav>
+</nav>
 
 
 

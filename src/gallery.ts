@@ -26,21 +26,24 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
     </a>
 
 
-    <!-- Navigation Links -->
-    <div class="nav-links" id="navLinks">
+    
+<!-- Navigation Links -->
+<div class="nav-links" id="navLinks">
 
-      <a href="/">HOME</a>
+  <a href="./index.html#home">HOME</a>
 
-      <a href="/#about">ABOUT</a>
+  <a href="./index.html#about">ABOUT</a>
 
-      <a href="/#rooms">ROOMS</a>
+  <a href="./index.html#rooms">ROOMS</a>
 
-      <a href="./gallery.html" class="active">GALLERY</a>
-      <a href="./explore.html">EXPLORE SRI LANKA</a>
+  <a href="./gallery.html" class="active">GALLERY</a>
 
-      <a href="/#contact">CONTACT</a>
+  <a href="./explore.html">EXPLORE SRI LANKA</a>
 
-    </div>
+  <a href="./index.html#contact">CONTACT</a>
+
+</div>
+
 
 
     <!-- Navigation Actions -->
