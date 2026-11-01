@@ -2453,14 +2453,20 @@ bookingForm?.addEventListener(
         confirmPayment.textContent = 'SAVING BOOKING...'
 
         try {
-          const bookingData = createBookingData()
+  const bookingData = createBookingData()
 
-          // Re-check at final submission so a date booked while the modal was open is rejected.
-          const stillAvailable = await isRoomAvailable(
-            bookingData.stay.room,
-            bookingData.stay.checkin,
-            bookingData.stay.checkout
-          )
+  if (!bookingData) {
+  confirmPayment.disabled = false
+  confirmPayment.textContent = 'CONFIRM BOOKING REQUEST'
+  return
+}
+
+  // Re-check at final submission so a date booked while the modal was open is rejected.
+  const stillAvailable = await isRoomAvailable(
+    bookingData.stay.room,
+    bookingData.stay.checkin,
+    bookingData.stay.checkout
+  )
           if (!stillAvailable) {
             confirmationModal.remove()
             alert('Sorry, these dates have just become unavailable. Please choose different dates.')
