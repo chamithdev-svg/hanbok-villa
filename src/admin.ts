@@ -47,12 +47,15 @@ app.innerHTML = `
     <section id="hv-dashboard" hidden>
       <header class="hv-admin-head"><div><p class="hv-muted" style="margin:0 0 7px">HANBOK VILLA · PRIVATE AREA</p><h1>Admin Dashboard</h1><p class="hv-muted" style="margin:0">Manage bookings, gallery photos and guest review photos.</p></div><div class="hv-actions"><button id="hv-refresh" class="hv-btn secondary">Refresh</button><button id="hv-logout" class="hv-btn secondary">Sign out</button></div></header>
       <p id="hv-message" role="status"></p>
-      <nav class="hv-tabs" aria-label="Admin sections"><button class="hv-tab active" data-tab="bookings">Bookings</button><button class="hv-tab" data-tab="gallery">Gallery Photos</button><button class="hv-tab" data-tab="reviews">Guest Reviews</button><button class="hv-tab" data-tab="blocked">Blocked Dates</button></nav>
+      <nav class="hv-tabs" aria-label="Admin sections"><button class="hv-tab active" data-tab="bookings">Bookings</button><button class="hv-tab" data-tab="gallery">Gallery Photos</button><button class="hv-tab" data-tab="reviews">Guest Reviews</button><button class="hv-tab" data-tab="blocked">Blocked Dates</button><button class="hv-tab" data-tab="prices">Room Prices</button></nav>
       <section id="hv-bookings-section" class="hv-section">
       <div class="hv-stats"><div class="hv-stat">All bookings<strong id="hv-stat-all">—</strong></div><div class="hv-stat">Pending<strong id="hv-stat-pending">—</strong></div><div class="hv-stat">Confirmed<strong id="hv-stat-confirmed">—</strong></div><div class="hv-stat">Cancelled<strong id="hv-stat-cancelled">—</strong></div></div>
-      <section class="hv-panel"><div class="hv-toolbar"><input id="hv-search" type="search" placeholder="Search guest, email, phone…" aria-label="Search bookings"><select id="hv-status-filter" aria-label="Filter by status"><option value="all">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select><select id="hv-room-filter" aria-label="Filter by accommodation"><option value="all">All accommodations</option><option value="room-one">Room One</option><option value="entire-villa">Entire Villa</option></select></div>
+      <section class="hv-panel"><div class="hv-toolbar"><input id="hv-search" type="search" placeholder="Search guest, email, phone…" aria-label="Search bookings"><select id="hv-status-filter" aria-label="Filter by status"><option value="all">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select><select id="hv-room-filter" aria-label="Filter by accommodation"><option value="all">All accommodations</option><option value="room-one">Room 1</option><option value="room-two">Room 2</option><option value="entire-villa">Entire Villa</option></select></div>
       <div class="hv-table-wrap"><table class="hv-table"><thead><tr><th>Guest</th><th>Stay</th><th>Guests / Room</th><th>Extras</th><th>Amount</th><th>Status</th><th>Update status</th></tr></thead><tbody id="hv-bookings-body"><tr><td colspan="7" class="hv-empty">Loading bookings…</td></tr></tbody></table></div>
-      <p class="hv-note">Confirm only after checking availability and arranging payment with the guest. Cancelling here updates the status; it does not automatically refund a payment or email the guest.</p></section>
+      <p class="hv-note">Confirm only after checking availability and arranging payment with the guest. Browser checks are not a substitute for database-level protection against concurrent admin changes. Cancelling here updates the status; it does not automatically refund a payment or email the guest.</p></section>
+      </section>
+      <section id="hv-prices-section" class="hv-section" hidden>
+        <section class="hv-panel"><h2>Room Prices</h2><p class="hv-note">LKR per night. Changes apply to new booking requests only; existing bookings retain their saved totals.</p><div id="hv-prices-list">Loading prices…</div><p id="hv-prices-message" role="status"></p></section>
       </section>
       <section id="hv-gallery-section" class="hv-section" hidden>
         <section class="hv-panel"><h2>Homepage & Gallery Media</h2><p class="hv-note">Upload photos or videos and choose where they appear. Videos are limited to 100 MB each.</p>
@@ -62,10 +65,10 @@ app.innerHTML = `
       <section id="hv-blocked-section" class="hv-section" hidden>
         <section class="hv-panel hv-blocked-form">
           <h2>Block Dates</h2>
-          <p class="hv-note">Use this for bookings received by phone or WhatsApp. Check-out date is not included in the blocked nights.</p>
+          <p class="hv-note">Use this for bookings received by phone or WhatsApp. Choose Room 1, Room 2, or Entire Villa. Check-out date is not included in blocked nights. Check bookings before blocking; this form does not perform an atomic inventory reservation.</p>
           <form id="hv-blocked-form">
             <div class="hv-form-grid">
-              <div><label for="hv-blocked-room">Accommodation</label><select id="hv-blocked-room" required><option value="Room One">Room One</option><option value="Entire Villa">Entire Villa</option></select></div>
+              <div><label for="hv-blocked-room">Accommodation</label><select id="hv-blocked-room" required><option value="room-one">Room 1</option><option value="room-two">Room 2</option><option value="entire-villa">Entire Villa</option></select></div>
               <div><label for="hv-blocked-note">Note</label><input id="hv-blocked-note" maxlength="200" placeholder="Phone booking / WhatsApp"></div>
               <div><label for="hv-blocked-start">Check-in date</label><input id="hv-blocked-start" type="date" required></div>
               <div><label for="hv-blocked-end">Check-out date</label><input id="hv-blocked-end" type="date" required></div>
@@ -125,8 +128,9 @@ function niceDate(value: string | null | undefined): string {
   return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(parts[0], parts[1] - 1, parts[2])))
 }
 function roomName(value: string): string {
-  if (value === 'room-one') return 'Room One'
-  if (value === 'entire-villa') return 'Entire Villa'
+  if (value === 'room-one' || value === 'Room One') return 'Room 1'
+  if (value === 'room-two' || value === 'Room Two') return 'Room 2'
+  if (value === 'entire-villa' || value === 'Entire Villa') return 'Entire Villa'
   return value || '—'
 }
 function extrasText(value: unknown): string {
@@ -160,7 +164,7 @@ function render(): void {
     const amount = b.total_amount == null ? '—' : `${escapeHtml(b.currency || 'LKR')} ${escapeHtml(Number(b.total_amount).toLocaleString('en-US', { maximumFractionDigits: 2 }))}`
     return `<tr>
       <td><strong>${escapeHtml(b.guest_name || 'Guest')}</strong><small>${escapeHtml(b.email)}</small><small>${escapeHtml(b.phone)} · ${escapeHtml(b.country)}</small><small>ID: ${escapeHtml(b.id)}</small></td>
-      <td>${niceDate(b.check_in)} → ${niceDate(b.check_out)}<small>Requested ${escapeHtml(b.created_at ? new Date(b.created_at).toLocaleString() : '—')}</small></td>
+      <td>${niceDate(b.check_in)} → ${niceDate(b.check_out)}<small>Check-in: 2:00 PM onwards · Check-out: before 11:00 AM (Sri Lanka time)</small><small>Requested ${escapeHtml(b.created_at ? new Date(b.created_at).toLocaleString() : '—')}</small></td>
       <td>${escapeHtml(b.guests)} guest(s)<small>${escapeHtml(roomName(b.room_type))}</small></td>
       <td>${extras}</td><td><strong>${amount}</strong><small>Payment: ${escapeHtml(b.payment_method || '—')}</small></td>
       <td><span class="hv-status ${escapeHtml(status)}">${escapeHtml(status)}</span></td>
@@ -193,10 +197,30 @@ async function updateStatus(id: string, status: string): Promise<void> {
   const booking = bookings.find(b => b.id === id)
   if (!booking) return
   if (status === 'confirmed' && booking.booking_status !== 'confirmed') {
-    const conflict = bookings.some(other => other.id !== id && other.room_type === booking.room_type && ['pending', 'confirmed'].includes((other.booking_status || 'pending').toLowerCase()) && other.check_in < booking.check_out && other.check_out > booking.check_in)
-    if (conflict) {
-      const proceed = window.confirm('Another pending or confirmed booking overlaps these dates for the same accommodation. Confirm anyway? Only continue if you have verified the room inventory and that this will not cause a double booking.')
-      if (!proceed) return
+    // Re-read inventory: the in-memory list may be stale. Do not offer a conflict override.
+    const [liveBookings, liveBlocks] = await Promise.all([
+      supabase.from('bookings').select('id,room_type,check_in,check_out,booking_status'),
+      supabase.from('blocked_dates').select('room_type,start_date,end_date')
+    ])
+    if (liveBookings.error || liveBlocks.error) {
+      setNotice(message, `Cannot verify inventory: ${liveBookings.error?.message || liveBlocks.error?.message}`)
+      return
+    }
+    const normalize = (value: string) => value.toLowerCase().trim().replace(/\s+/g, '-')
+    const target = normalize(booking.room_type)
+    const conflicts = (a: string, b: string) => a === 'entire-villa' || b === 'entire-villa' || a === b
+    const bookingConflict = (liveBookings.data || []).some(other =>
+      other.id !== id && ['pending', 'confirmed'].includes((other.booking_status || 'pending').toLowerCase()) &&
+      other.check_in < booking.check_out && other.check_out > booking.check_in &&
+      conflicts(normalize(other.room_type || ''), target)
+    )
+    const blockConflict = (liveBlocks.data || []).some(block =>
+      block.start_date < booking.check_out && block.end_date > booking.check_in &&
+      conflicts(normalize(block.room_type || ''), target)
+    )
+    if (bookingConflict || blockConflict) {
+      setNotice(message, 'Cannot confirm: another active booking or blocked date overlaps this accommodation. Resolve the conflict first.')
+      return
     }
   }
   if (!window.confirm(`Change booking status to “${status}” for ${booking.guest_name || 'this guest'}?`)) return
@@ -322,7 +346,7 @@ function renderBlockedDates(): void {
     const busy = busyBlockedIds.has(item.id)
     return `<article class="hv-blocked-item">
       <div>
-        <strong>${escapeHtml(roomName(item.room_type === 'Room One' ? 'room-one' : item.room_type === 'Entire Villa' ? 'entire-villa' : item.room_type))}</strong>
+        <strong>${escapeHtml(roomName(item.room_type))}</strong>
         <p>${niceDate(item.start_date)} → ${niceDate(item.end_date)} <span class="hv-muted">(check-out excluded)</span></p>
         <small>${escapeHtml(item.note || 'No note')} · Added ${escapeHtml(item.created_at ? new Date(item.created_at).toLocaleString() : 'date unknown')}</small>
       </div>
@@ -385,7 +409,7 @@ blockedForm.addEventListener('submit', async event => {
   try {
     const overlaps = blockedDates.some(item =>
       item.start_date < endDate && item.end_date > startDate &&
-      (roomType === 'Entire Villa' || item.room_type === 'Entire Villa' || item.room_type === roomType)
+      (roomType === 'entire-villa' || ['entire-villa', 'Entire Villa'].includes(item.room_type) || item.room_type.toLowerCase().replace(/\s+/g, '-') === roomType)
     )
     if (overlaps) {
       setNotice(blockedMessage, 'These dates overlap an existing blocked range for this accommodation. Review the list before adding another range.')
@@ -408,12 +432,39 @@ blockedForm.addEventListener('submit', async event => {
   }
 })
 
+type RoomPrice = { id: string; accommodation: string; guest_count: number; price_lkr: number; active: boolean }
+async function loadPrices(): Promise<void> {
+  const list = document.querySelector<HTMLElement>('#hv-prices-list')!
+  const notice = document.querySelector<HTMLElement>('#hv-prices-message')!
+  list.textContent = 'Loading prices…'
+  const { data, error } = await supabase.from('room_prices').select('id,accommodation,guest_count,price_lkr,active').order('accommodation').order('guest_count')
+  if (error) { list.textContent = ''; setNotice(notice, `Unable to load prices: ${error.message}`); return }
+  const prices = (data || []) as RoomPrice[]
+  list.innerHTML = prices.map(p => `<form class="hv-price-form hv-blocked-item" data-price-id="${escapeHtml(p.id)}"><div><strong>${escapeHtml(roomName(p.accommodation))}</strong><p>${p.guest_count} guest(s) · ${p.active ? 'Active' : 'Inactive'}</p></div><div class="hv-actions"><input type="number" min="1" step="1" required value="${p.price_lkr}" aria-label="Price in LKR" style="width:160px"><button class="hv-btn" type="submit">Save Price</button></div></form>`).join('') || '<p>No room prices found.</p>'
+  list.querySelectorAll<HTMLFormElement>('form[data-price-id]').forEach(form => form.addEventListener('submit', async e => {
+    e.preventDefault()
+    const input = form.querySelector<HTMLInputElement>('input')!
+    const button = form.querySelector<HTMLButtonElement>('button')!
+    const amount = Number(input.value)
+    if (!Number.isSafeInteger(amount) || amount <= 0) { setNotice(notice, 'Enter a valid positive LKR price.'); return }
+    button.disabled = true
+    const { data: updated, error } = await supabase.from('room_prices').update({ price_lkr: amount, updated_at: new Date().toISOString() }).eq('id', form.dataset.priceId!).select('id')
+    button.disabled = false
+    if (error) { setNotice(notice, `Price update failed: ${error.message}`); return }
+    if (!updated?.length) { setNotice(notice, 'Price was not updated. Check admin RLS permissions.'); return }
+    setNotice(notice, 'Price saved successfully.', true)
+    await loadPrices()
+  }))
+}
+
 function activateTab(tab: string) {
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab))
   document.querySelector('#hv-bookings-section')!.toggleAttribute('hidden', tab !== 'bookings')
   document.querySelector('#hv-gallery-section')!.toggleAttribute('hidden', tab !== 'gallery')
   document.querySelector('#hv-reviews-section')!.toggleAttribute('hidden', tab !== 'reviews')
   document.querySelector('#hv-blocked-section')!.toggleAttribute('hidden', tab !== 'blocked')
+  document.querySelector('#hv-prices-section')!.toggleAttribute('hidden', tab !== 'prices')
+  if (tab === 'prices') void loadPrices()
   if (tab === 'blocked') void loadBlockedDates()
   if (tab === 'gallery') void loadGallery()
   if (tab === 'reviews') void loadReviews()

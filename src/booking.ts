@@ -436,7 +436,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div class="form-group">
 
               <label for="checkin">
-                Check-in Date *
+                Check-in Date * (from 2:00 PM)
               </label>
 
               <input
@@ -452,7 +452,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div class="form-group">
 
               <label for="checkout">
-                Check-out Date *
+                Check-out Date * (before 11:00 AM)
               </label>
 
               <input
@@ -474,7 +474,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="form-group">
 
             <label for="guests">
-              Number of Guests *
+              1. Number of Guests *
             </label>
 
             <select
@@ -487,7 +487,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
                 Select number of guests
               </option>
 
-              <option value="1">1 Guest</option>
               <option value="2">2 Guests</option>
               <option value="3">3 Guests</option>
               <option value="4">4 Guests</option>
@@ -503,7 +502,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="form-group">
 
             <label for="accommodation">
-              Accommodation *
+              2. Accommodation *
             </label>
 
             <select
@@ -517,7 +516,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
               </option>
 
               <option value="room-one">
-                Room One
+                Guest Room
               </option>
 <option value="entire-villa">
                 Entire Villa
@@ -715,7 +714,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
             <div class="summary-row">
 
-              <span>Check-in</span>
+              <span>Check-in (from 2:00 PM)</span>
 
               <strong id="summaryCheckin">
                 Not selected
@@ -726,7 +725,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
             <div class="summary-row">
 
-              <span>Check-out</span>
+              <span>Check-out (before 11:00 AM)</span>
 
               <strong id="summaryCheckout">
                 Not selected
@@ -923,7 +922,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div class="form-group">
 
               <label for="groupCheckin">
-                Check-in Date *
+                Check-in Date * (from 2:00 PM)
               </label>
 
               <input
@@ -938,7 +937,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div class="form-group">
 
               <label for="groupCheckout">
-                Check-out Date *
+                Check-out Date * (before 11:00 AM)
               </label>
 
               <input
@@ -957,7 +956,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="form-group">
 
             <label for="groupGuests">
-              Number of Guests *
+              1. Number of Guests *
             </label>
 
             <input
@@ -1149,6 +1148,22 @@ const summaryCheckout = document.querySelector<HTMLElement>('#summaryCheckout')
 const summaryPayment = document.querySelector<HTMLElement>('#summaryPayment')
 
 
+/* Restrict accommodation choices by guest count.
+   2–3 guests: Guest Room only; 4 guests: Entire Villa only. */
+function syncAccommodationOptions(): void {
+  if (!guests || !accommodation) return
+  const count = Number(guests.value)
+  const roomOption = accommodation.querySelector<HTMLOptionElement>('option[value="room-one"]')
+  const villaOption = accommodation.querySelector<HTMLOptionElement>('option[value="entire-villa"]')
+  if (roomOption) roomOption.disabled = count === 4
+  if (villaOption) villaOption.disabled = count >= 2 && count <= 3
+  if ((count === 4 && accommodation.value === 'room-one') ||
+      (count >= 2 && count <= 3 && accommodation.value === 'entire-villa')) {
+    accommodation.value = ''
+    document.querySelector('#availabilityStatus')?.remove()
+  }
+}
+
 /* Update Summary */
 
 function updateBookingSummary() {
@@ -1214,7 +1229,7 @@ function updateBookingSummary() {
 
 guests?.addEventListener(
   'change',
-  updateBookingSummary
+  () => { syncAccommodationOptions(); updateBookingSummary(); calculateBookingPrice(); checkGuestCapacity() }
 )
 
 
@@ -1317,6 +1332,7 @@ checkout?.addEventListener('change', () => {
 
   if (
     checkin?.value &&
+    checkout.value !== '' &&
     checkout.value <= checkin.value
   ) {
 
@@ -1333,6 +1349,179 @@ checkout?.addEventListener('change', () => {
 
 })
 
+/* HANBOK VILLA: always-visible custom availability calendar.
+   Native date pickers cannot disable individual booked nights. */
+const hvStyle = document.createElement('style')
+hvStyle.textContent = `
+.hv-cal[hidden]{display:none!important}.hv-cal{margin:14px 0 20px;padding:16px;border:1px solid #d6c7a9;border-radius:12px;background:#fff;max-width:540px}
+.hv-cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.hv-cal-head button{padding:8px 15px;border:1px solid #d6c7a9;border-radius:7px;background:#fff;cursor:pointer}
+.hv-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.hv-cal-grid button{min-width:0;min-height:40px;border:0;border-radius:6px;background:#f7f4ed;color:#202020;cursor:pointer}
+.hv-cal-grid button:disabled{background:#ececec;color:#999;cursor:not-allowed}
+.hv-cal-grid button.hv-unavailable{background:#f4dede;color:#a94444;text-decoration:line-through}
+.hv-cal-grid button.hv-picked{background:#94703b;color:#fff}
+.hv-cal-grid span{text-align:center;padding:9px 0;font-size:12px}
+.hv-cal-help{font-size:13px;color:#555;margin:12px 0 0}
+#checkin,#checkout{cursor:pointer;background:#fff}
+.hv-date-title{margin:22px 0 12px}.hv-date-title strong{display:block;font-size:17px;color:#21352e}.hv-date-title p{margin:5px 0;color:#666;font-size:13px}
+.hv-cal{max-width:none;width:100%;box-sizing:border-box}.hv-cal-head strong{font-size:17px;color:#22382f}
+.hv-cal-grid button.hv-range{background:#e7dac3;color:#4d3921}
+.hv-cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px;font-size:12px;color:#444}
+.hv-cal-legend span{display:inline-flex;align-items:center;gap:6px}.hv-cal-legend i{display:inline-block;width:13px;height:13px;border-radius:3px;border:1px solid #ddd}
+.hv-legend-available{background:#f7f4ed}.hv-legend-booked{background:#f4dede}.hv-legend-selected{background:#94703b}
+@media(max-width:480px){.hv-cal{padding:10px}.hv-cal-grid{gap:3px}.hv-cal-grid button{min-height:36px}.hv-cal-legend{gap:9px}}
+
+`
+document.head.appendChild(hvStyle)
+type HvNight = { night: string; unavailable: boolean }
+let hvMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+let hvMode: 'in' | 'out' = 'in'
+let hvNights = new Map<string, boolean>()
+let hvLoadId = 0
+let hvFailed = true
+const hvCalendar = document.createElement('div')
+hvCalendar.className = 'hv-cal'
+hvCalendar.hidden = true
+hvCalendar.innerHTML = `<div class="hv-cal-head"><button type="button" id="hv-prev" aria-label="Previous month">‹</button><strong id="hv-month"></strong><button type="button" id="hv-next" aria-label="Next month">›</button></div><div class="hv-cal-grid" id="hv-days"></div><p class="hv-cal-help" id="hv-help" aria-live="polite"></p>`
+// Put guest count and accommodation FIRST, then dates and calendar.
+const hvDatesRow = checkin?.closest('.form-row') as HTMLElement | null
+const hvRoomGroup = accommodation?.closest('.form-group') as HTMLElement | null
+if (hvDatesRow && hvRoomGroup) {
+  hvRoomGroup.insertAdjacentElement('afterend', hvDatesRow)
+  const heading = document.createElement('div')
+  heading.className = 'hv-date-title'
+  heading.innerHTML = '<strong>3. Select Your Stay Dates</strong><p>Choose your check-in first, then your check-out on the calendar below.</p>'
+  hvDatesRow.insertAdjacentElement('beforebegin', heading)
+  hvDatesRow.insertAdjacentElement('afterend', hvCalendar)
+} else {
+  checkout?.parentElement?.parentElement?.insertAdjacentElement('afterend', hvCalendar)
+}
+const hvLegend = document.createElement('div')
+hvLegend.className = 'hv-cal-legend'
+hvLegend.innerHTML = '<span><i class="hv-legend-available"></i> Available</span><span><i class="hv-legend-booked"></i> Booked</span><span><i class="hv-legend-selected"></i> Selected</span>'
+hvCalendar.querySelector('#hv-days')?.insertAdjacentElement('afterend', hvLegend)
+const hvISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+const hvToday = () => hvISO(new Date())
+const hvRoom = () => accommodation?.value || ''
+async function hvLoadCalendar(): Promise<void> {
+  const requestId = ++hvLoadId
+  if (!hvRoom()) { hvCalendar.hidden = true; return }
+  hvCalendar.hidden = false
+  hvFailed = true
+  hvRenderCalendar()
+  hvCalendar.querySelector<HTMLElement>('#hv-help')!.textContent = 'Loading availability…'
+  const start = hvISO(hvMonth)
+  const end = hvISO(new Date(hvMonth.getFullYear(),hvMonth.getMonth()+1,1))
+  const { data, error } = await supabase.rpc('get_unavailable_nights', { p_room_type: hvRoom(), p_start: start, p_end: end })
+  if (requestId !== hvLoadId) return
+  if (error || !Array.isArray(data) || data.length === 0) {
+    console.error('Availability calendar request failed or returned no nights:', { error, data, start, end, room: hvRoom() })
+    hvNights.clear()
+    hvFailed = true
+  } else {
+    hvNights = new Map((data as HvNight[]).map(item => [String(item.night).slice(0, 10), item.unavailable === true]))
+    console.info('HANBOK calendar availability loaded:', { room: hvRoom(), start, end, booked: [...hvNights].filter(([, blocked]) => blocked).map(([night]) => night) })
+    hvFailed = false
+  }
+  hvRenderCalendar()
+}
+async function hvPickDate(date: string): Promise<void> {
+  if (!checkin || !checkout) return
+  if (hvMode === 'in') {
+    checkin.value = date
+    checkout.value = ''
+    checkin.dispatchEvent(new Event('change',{bubbles:true}))
+    // Clear the old check-out before validating the newly chosen check-in.
+    checkout.dispatchEvent(new Event('change',{bubbles:true}))
+    hvMode = 'out'
+    hvRenderCalendar()
+    return
+  }
+  if (!checkin.value || date <= checkin.value) return
+  // Check the WHOLE stay, not just the displayed month. This also prevents
+  // selecting a checkout past an unavailable night in another month.
+  const help = hvCalendar.querySelector<HTMLElement>('#hv-help')!
+  help.textContent = 'Checking the full stay…'
+  const requestId = ++hvLoadId
+  let available = false
+  try { available = await isRoomAvailable(hvRoom(), checkin.value, date) }
+  catch (error) { console.error('Full-stay availability failed:', error); help.textContent = 'Could not verify these dates. Try again.'; return }
+  if (requestId !== hvLoadId) return
+  if (!available) { help.textContent = 'These dates overlap an existing booking. Please select another check-out date.'; return }
+  checkout.value = date
+  checkout.dispatchEvent(new Event('change',{bubbles:true}))
+  hvRenderCalendar()
+}
+function hvRenderCalendar(): void {
+  const grid = hvCalendar.querySelector<HTMLElement>('#hv-days')!
+  hvCalendar.querySelector<HTMLElement>('#hv-month')!.textContent = hvMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'})
+  grid.innerHTML = ''
+  for (const day of ['Su','Mo','Tu','We','Th','Fr','Sa']) { const el=document.createElement('span');el.textContent=day;grid.appendChild(el) }
+  const y=hvMonth.getFullYear(), m=hvMonth.getMonth()
+  for(let i=0;i<new Date(y,m,1).getDay();i++) grid.appendChild(document.createElement('span'))
+  for(let n=1;n<=new Date(y,m+1,0).getDate();n++) {
+    const date=hvISO(new Date(y,m,n))
+    const btn=document.createElement('button')
+    btn.type='button'; btn.textContent=String(n)
+    const blocked=hvNights.get(date)===true
+    let disabled=hvFailed || date<hvToday() || !hvRoom()
+    if(hvMode==='in') disabled ||= blocked
+    else {
+      const arrival=checkin?.value||''
+      disabled ||= !arrival || date<=arrival
+      if(!disabled) for(const [night,unavailable] of hvNights) {
+        if(unavailable && night>=arrival && night<date) { disabled=true; break }
+      }
+    }
+    btn.disabled=disabled
+    if(blocked) { btn.classList.add('hv-unavailable'); btn.title='Already booked / unavailable' }
+    // In checkout mode a booked day may be used as the departure boundary,
+    // but it is not an available overnight stay.
+    if(date===checkin?.value || date===checkout?.value) btn.classList.add('hv-picked')
+    else if(checkin?.value && checkout?.value && date>checkin.value && date<checkout.value) btn.classList.add('hv-range')
+    btn.addEventListener('click',()=>{ void hvPickDate(date) })
+    grid.appendChild(btn)
+  }
+  hvCalendar.querySelector<HTMLElement>('#hv-help')!.textContent = hvFailed
+    ? 'Availability could not be loaded. Date selection is disabled.'
+    : hvMode==='in'
+      ? 'Choose check-in. Crossed-out dates are unavailable.'
+      : 'Choose check-out. The check-out day itself may be booked by the next guest.'
+}
+hvCalendar.querySelector<HTMLButtonElement>('#hv-prev')!.addEventListener('click',()=>{
+  const previous=new Date(hvMonth.getFullYear(),hvMonth.getMonth()-1,1)
+  if(hvISO(new Date(previous.getFullYear(),previous.getMonth()+1,0)) < hvToday()) return
+  hvMonth=previous; void hvLoadCalendar()
+})
+hvCalendar.querySelector<HTMLButtonElement>('#hv-next')!.addEventListener('click',()=>{hvMonth=new Date(hvMonth.getFullYear(),hvMonth.getMonth()+1,1);void hvLoadCalendar()})
+for (const [input,mode] of [[checkin,'in'],[checkout,'out']] as const) {
+  if (!input) continue
+  input.type='text'
+  input.readOnly=true
+  input.placeholder='Choose from calendar below'
+  input.addEventListener('click',()=>{
+    hvMode=mode
+    if(mode==='out' && !checkin?.value) hvMode='in'
+    hvMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1)
+    if(input.value) { const d=new Date(input.value+'T12:00:00'); hvMonth=new Date(d.getFullYear(),d.getMonth(),1) }
+    void hvLoadCalendar()
+  })
+}
+function hvResetCalendar(): void {
+  ++hvLoadId
+  hvNights.clear()
+  if(checkin) {checkin.value='';checkin.dispatchEvent(new Event('change',{bubbles:true}))}
+  if(checkout) {checkout.value='';checkout.dispatchEvent(new Event('change',{bubbles:true}))}
+  hvMode='in'
+  hvMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1)
+  void hvLoadCalendar()
+}
+accommodation?.addEventListener('change',hvResetCalendar)
+guests?.addEventListener('change',()=>{ if(!hvRoom()) { hvCalendar.hidden=true; ++hvLoadId } })
+document.addEventListener('visibilitychange',()=>{if(!document.hidden && hvRoom()) void hvLoadCalendar()})
+// Display calendar immediately when accommodation is already selected.
+if(hvRoom()) void hvLoadCalendar()
 /* ========================================
    STEP 2 - CHECK AVAILABILITY FROM SUPABASE
 ======================================== */
@@ -1509,7 +1698,7 @@ function checkGuestCapacity() {
 
   /* Room One / Room Two */
 
-  if (selectedRoom === 'room-one' && guestCount > 3) {
+  if (selectedRoom === 'room-one' && ![2, 3].includes(guestCount)) {
     isValid = false
   }
 
@@ -1518,7 +1707,7 @@ function checkGuestCapacity() {
 
   if (
     selectedRoom === 'entire-villa' &&
-    guestCount > 6
+    guestCount !== 4
   ) {
     isValid = false
   }
@@ -1560,7 +1749,7 @@ function checkGuestCapacity() {
 
     capacityStatus.innerHTML = `
       <span>!</span>
-      This room can accommodate a maximum of 3 guests.
+      Guest Room is for 2–3 guests; Entire Villa is for 4 guests.
       Please choose another accommodation option.
     `
 
@@ -1604,12 +1793,25 @@ accommodation?.addEventListener(
 ======================================== */
 
 
-const roomPrices = {
-  LKR: {
-    'room-one': 18000,
-    'entire-villa': 25000
-  }
+type RoomPriceRow = { accommodation: string; guest_count: number; price_lkr: number; active: boolean }
+let roomPrices: RoomPriceRow[] = []
+let roomPricesLoaded = false
+function nightlyPrice(room: string, guestCount: number): number | null {
+  return roomPrices.find(p => p.accommodation === room && p.guest_count === guestCount && p.active)?.price_lkr ?? null
 }
+async function loadRoomPrices(): Promise<void> {
+  const { data, error } = await supabase.from('room_prices').select('accommodation,guest_count,price_lkr,active').eq('active', true)
+  if (error) { console.error('Unable to load room prices:', error.message); roomPricesLoaded = false; return }
+  roomPrices = (data || []) as RoomPriceRow[]
+  roomPricesLoaded = true
+  calculateBookingPrice()
+}
+void loadRoomPrices()
+// Refresh prices when returning to this tab, without disturbing calendar selection.
+window.addEventListener('pageshow', () => { void loadRoomPrices() })
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) void loadRoomPrices()
+})
 
 // LKR remains the source price. USD is calculated using a live public exchange-rate API.
 let selectedCurrency: 'LKR' | 'USD' = 'LKR'
@@ -1780,11 +1982,12 @@ const currency = selectedCurrency
   /* Room Price */
 
   
-const pricePerNightLkr =
-  roomPrices.LKR[
-    accommodation.value as
-    keyof typeof roomPrices.LKR
-  ]
+const pricePerNightLkr = nightlyPrice(accommodation.value, Number(guests?.value || 0))
+  if (pricePerNightLkr === null) {
+    resetPrices()
+    if (totalStayPrice) totalStayPrice.textContent = roomPricesLoaded ? 'Not available for selected guests' : 'Loading prices…'
+    return
+  }
   const pricePerNight = pricePerNightLkr
 
 
@@ -1861,7 +2064,7 @@ const pricePerNightLkr =
 ======================================== */
 
 
-/* Accommodation */
+/* 2. Accommodation */
 
 accommodation?.addEventListener(
   'change',
@@ -1956,18 +2159,18 @@ bookingForm?.addEventListener(
     const guestCount =
       Number(selectedGuests)
 
-    if (guestCount > 4) {
+    if (guestCount < 2 || guestCount > 4) {
       alert('For 5 or more guests, please use the Large Groups request form for a personalised quote.')
       return
     }
 
     if (
       selectedRoom === 'room-one' &&
-      guestCount > 3
+      ![2, 3].includes(guestCount)
     ) {
 
       alert(
-        'This room can accommodate a maximum of 3 guests.'
+        'Guest Room requires 2 or 3 guests.'
       )
 
       return
@@ -2131,13 +2334,13 @@ bookingForm?.addEventListener(
 
 
           <div>
-            <span>Check-in</span>
+            <span>Check-in (from 2:00 PM)</span>
             <strong>${selectedCheckin}</strong>
           </div>
 
 
           <div>
-            <span>Check-out</span>
+            <span>Check-out (before 11:00 AM)</span>
             <strong>${selectedCheckout}</strong>
           </div>
 
@@ -2264,23 +2467,19 @@ bookingForm?.addEventListener(
             return
           }
 
-          const { error } = await supabase
-            .from('bookings')
-            .insert({
-              guest_name: bookingData.guest.name,
-              email: bookingData.guest.email,
-              phone: bookingData.guest.phone,
-              country: bookingData.guest.country,
-              check_in: bookingData.stay.checkin,
-              check_out: bookingData.stay.checkout,
-              guests: bookingData.stay.guests,
-              room_type: bookingData.stay.room,
-              extra_services: bookingData.services,
-              total_amount: bookingData.totalAmountLkr,
-              currency: 'LKR',
-              payment_method: bookingData.payment.type,
-              booking_status: 'pending'
-            })
+          // Atomic server-side room allocation. The database selects Room 1 or Room 2.
+          const { error } = await supabase.rpc('hv_submit_booking_request', {
+            p_guest_name: bookingData.guest.name,
+            p_email: bookingData.guest.email,
+            p_phone: bookingData.guest.phone,
+            p_country: bookingData.guest.country,
+            p_check_in: bookingData.stay.checkin,
+            p_check_out: bookingData.stay.checkout,
+            p_guests: Number(bookingData.stay.guests),
+            p_room_type: bookingData.stay.room,
+            p_extra_services: bookingData.services,
+            p_payment_method: bookingData.payment.type
+          })
 
           if (error) {
             console.error('Supabase booking insert failed:', error)
@@ -2373,8 +2572,16 @@ function createBookingData() {
   const selectedCheckout =
     checkout?.value || ''
 
-  const selectedRoomKey = selectedRoom as keyof typeof roomPrices.LKR
-  const pricePerNight = roomPrices.LKR[selectedRoomKey] || 0
+  if ((selectedRoom === 'entire-villa' && Number(selectedGuests) !== 4) ||
+      (selectedRoom === 'room-one' && ![2, 3].includes(Number(selectedGuests)))) {
+    window.alert('Entire Villa requires 4 guests. For 2–3 guests, please choose Guest Room.')
+    return
+  }
+  const pricePerNight = nightlyPrice(selectedRoom, Number(selectedGuests))
+  if (pricePerNight === null) {
+    window.alert('This accommodation and guest count is not currently available. Please choose another option.')
+    return
+  }
   const totalAmountLkr = pricePerNight * getNumberOfNights()
 
 
@@ -2542,3 +2749,6 @@ window.addEventListener("scroll", () => {
 
 // Load a fresh LKR→USD rate for the currency selector.
 void loadExchangeRate()
+
+// Initialize disabled accommodation options on page load.
+syncAccommodationOptions()

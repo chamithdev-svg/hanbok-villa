@@ -203,11 +203,12 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="rooms-amenities">
         <div class="rooms-amenity"><span>☕</span><strong>Breakfast</strong><small>Included</small></div>
         <div class="rooms-amenity"><span>🅿️</span><strong>Free Parking</strong></div>
-        <div class="rooms-amenity"><span>🛵</span><strong>Scooter*</strong><small>Ask for details</small></div>
+        <div class="rooms-amenity"><span>📶</span><strong>Free Wi-Fi</strong><small>Included</small></div>
+        <div class="rooms-amenity"><span>🛵</span><strong>Scooter Rental</strong><small>Extra charge</small></div>
       </div>
       <div class="rooms-location-card">
         <span class="rooms-contact-icon">📍</span>
-        <div><strong>Our Location</strong><p>Hikkaduwa, Galle, Sri Lanka</p><small>Near Hikkaduwa Beach</small></div>
+        <div><strong>Our Location</strong><p>Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p><small>Near Hikkaduwa Beach</small></div>
       </div>
       <div class="rooms-contact-card">
         <span class="rooms-contact-icon">✉️</span>
@@ -247,15 +248,16 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
 
       <p class="room-description"><strong>🍳 Complimentary breakfast included.</strong></p>
-      <p class="room-description"><strong>🛵 Free Scooty included for guests.</strong></p>
-      <p class="room-description scooter-terms">A valid driving licence and document verification are required. A refundable security deposit is required before the scooty is handed over.</p>
+      <p class="room-description"><strong>✈️ One free airport transfer per booking — choose pickup OR drop-off.</strong></p>
+      <p class="room-description"><strong>🛵 Scooter rental available at an additional charge.</strong></p>
+      <p class="room-description scooter-terms">A valid driving licence and document verification may be required. Additional charges apply. A refundable security deposit is required before the scooty is handed over.</p>
 
       <!-- Pricing -->
       <div class="room-pricing">
 
         <div class="price-row">
           <span>👥 2 Guests</span>
-          <strong>LKR 18,000 / night</strong>
+          <strong id="homeRoomOnePrice">Loading price…</strong>
         </div>
 
 
@@ -296,15 +298,16 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
 
       <p class="room-description"><strong>🍳 Complimentary breakfast included.</strong></p>
-      <p class="room-description"><strong>🛵 Free Scooty included for guests.</strong></p>
-      <p class="room-description scooter-terms">A valid driving licence and document verification are required. A refundable security deposit is required before the scooty is handed over.</p>
+      <p class="room-description"><strong>✈️ One free airport transfer per booking — choose pickup OR drop-off.</strong></p>
+      <p class="room-description"><strong>🛵 Scooter rental available at an additional charge.</strong></p>
+      <p class="room-description scooter-terms">A valid driving licence and document verification may be required. Additional charges apply. A refundable security deposit is required before the scooty is handed over.</p>
 
       <!-- Pricing -->
       <div class="room-pricing">
 
         <div class="price-row">
           <span>🏡 Entire Villa</span>
-          <strong>LKR 25,000 / night</strong>
+          <strong id="homeEntireVillaPrice">Loading price…</strong>
         </div>
 
       </div>
@@ -584,12 +587,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Pickup</h3>
 
       <p>
-        We can arrange a convenient airport pickup
-        service for your arrival.
+        Choose complimentary airport pickup for your booking. Only one airport transfer (pickup or drop-off) is free per booking.
       </p>
 
       <span class="extra-charge">
-        Additional charges apply
+        Free if selected as your one complimentary airport transfer
       </span>
 
     </div>
@@ -604,12 +606,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Drop-off</h3>
 
       <p>
-        We can arrange transportation to the airport
-        for a comfortable departure.
+        Choose complimentary airport drop-off for your booking. Only one airport transfer (pickup or drop-off) is free per booking.
       </p>
 
       <span class="extra-charge">
-        Additional charges apply
+        Free if selected as your one complimentary airport transfer
       </span>
 
     </div>
@@ -634,20 +635,20 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
     </div>
     
-    <!-- Complimentary Scooty -->
+    <!-- Scooter Rental -->
 <div class="service-card">
 
   <div class="service-icon">🛵</div>
 
-  <h3>Free Scooty for Guests</h3>
+  <h3>Scooter Rental</h3>
 
   <p>
-    Enjoy a complimentary scooty during your stay, subject to availability.
-    A refundable security deposit is required before the scooty is handed over.
+    Explore the area with a scooter rental, available on request for an additional charge.
+    Availability and any refundable security deposit should be confirmed in advance.
   </p>
 
   <span class="service-note">
-    A valid driving licence and document verification are required.
+    A valid driving licence and document verification may be required. Additional charges apply.
   </span>
 
 </div>
@@ -749,8 +750,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Beautiful Location</h3>
 
       <p>
-        Located in the beautiful Hikkaduwa area, surrounded
-        by peaceful nature and close to local attractions.
+        Find us at Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka, near local attractions.
       </p>
 
     </div>
@@ -765,12 +765,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Transfer</h3>
 
       <p>
-        Airport pickup and drop-off services can be
-        arranged upon request for your convenience.
+        One airport transfer is included per booking. Choose either pickup or drop-off; both are not complimentary.
       </p>
 
       <span>
-        Additional charges apply
+        One-way transfer included (pickup OR drop-off)
       </span>
 
     </div>
@@ -802,7 +801,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <div class="villa-map">
 
   <iframe
-    src="https://www.google.com/maps?q=Hikkaduwa,Sri+Lanka&output=embed"
+    src="https://www.google.com/maps?q=Nagaha+Kade%2C+Panvila+Road%2C+80240+Hikkaduwa%2C+Sri+Lanka&output=embed"
     width="100%"
     height="450"
     style="border:0;"
@@ -837,7 +836,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </div>
 
 
-    <a href="#contact" class="transport-btn">
+    <a href="./index.html#contact" class="transport-btn">
       CONTACT US
     </a>
 
@@ -1139,7 +1138,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       <p>📞 +94 72 518 3824</p>
       <p>✉ hanbokhikka@gmail.com</p>
-      <p>📍 Hikkaduwa, Sri Lanka</p>
+      <p>📍 Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
 
     </div>
 
@@ -1342,7 +1341,7 @@ if (introScreen && introVideo && introEnter) {
 
       videoSrc = isMobile
         ? "./images/welcome-video-mobile.mp4"
-        : "/images/welcome-video.mp4";
+        : "./images/welcome-video.mp4";
 
     }
 
@@ -1395,3 +1394,28 @@ if (introScreen && introVideo && introEnter) {
   }
 
 }
+
+// Home card prices: read the same active prices used by the booking form.
+async function refreshHomeRoomPrices(): Promise<void> {
+  const roomEl = document.querySelector<HTMLElement>('#homeRoomOnePrice')
+  const villaEl = document.querySelector<HTMLElement>('#homeEntireVillaPrice')
+  const { data, error } = await supabase.from('room_prices')
+    .select('accommodation,guest_count,price_lkr,active').eq('active', true)
+  if (error) {
+    console.error('Could not load home prices:', error.message)
+    if (roomEl) roomEl.textContent = 'Contact us for price'
+    if (villaEl) villaEl.textContent = 'Contact us for price'
+    return
+  }
+  const rows = data || []
+  const format = (amount: number) => `LKR ${amount.toLocaleString('en-US')} / night`
+  const room = rows.find(r => r.accommodation === 'room-one' && r.guest_count === 2)
+  const villa = rows.find(r => r.accommodation === 'entire-villa' && r.guest_count === 4)
+  if (roomEl) roomEl.textContent = room ? format(Number(room.price_lkr)) : 'Contact us for price'
+  if (villaEl) villaEl.textContent = villa ? format(Number(villa.price_lkr)) : 'Contact us for price'
+}
+void refreshHomeRoomPrices()
+window.addEventListener('pageshow', () => { void refreshHomeRoomPrices() })
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) void refreshHomeRoomPrices()
+})

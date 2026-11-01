@@ -287,10 +287,9 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
         <h4>CONTACT</h4>
 
-        <p>📞 +94 XX XXX XXXX</p>
-        <p>✉ info@yourvilla.com</p>
-        <p>📍 Galle, Sri Lanka</p>
-
+        <p>📞 +94 72 518 3824</p>
+        <p>✉ hanbokhikka@gmail.com</p>
+        <p>📍 Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
       </div>
 
     </div>
