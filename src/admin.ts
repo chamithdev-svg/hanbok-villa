@@ -52,7 +52,7 @@ app.innerHTML = `
       <div class="hv-stats"><div class="hv-stat">All bookings<strong id="hv-stat-all">—</strong></div><div class="hv-stat">Pending<strong id="hv-stat-pending">—</strong></div><div class="hv-stat">Confirmed<strong id="hv-stat-confirmed">—</strong></div><div class="hv-stat">Cancelled<strong id="hv-stat-cancelled">—</strong></div></div>
       <section class="hv-panel"><div class="hv-toolbar"><input id="hv-search" type="search" placeholder="Search guest, email, phone…" aria-label="Search bookings"><select id="hv-status-filter" aria-label="Filter by status"><option value="all">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select><select id="hv-room-filter" aria-label="Filter by accommodation"><option value="all">All accommodations</option><option value="room-one">Room 1</option><option value="room-two">Room 2</option><option value="entire-villa">Entire Villa</option></select></div>
       <div class="hv-table-wrap"><table class="hv-table"><thead><tr><th>Guest</th><th>Stay</th><th>Guests / Room</th><th>Extras</th><th>Amount</th><th>Status</th><th>Update status</th></tr></thead><tbody id="hv-bookings-body"><tr><td colspan="7" class="hv-empty">Loading bookings…</td></tr></tbody></table></div>
-      <p class="hv-note">Confirm only after checking availability and arranging payment with the guest. Browser checks are not a substitute for database-level protection against concurrent admin changes. Cancelling here updates the status; it does not automatically refund a payment or email the guest.</p></section>
+      <p class="hv-note">Confirm only after checking availability and arranging payment with the guest. Browser checks are not a substitute for database-level protection against concurrent admin changes. Cancelling here updates the status permanently; it does not automatically refund a payment. Booking emails are handled separately by the configured notification service.</p></section>
       </section>
       <section id="hv-prices-section" class="hv-section" hidden>
         <section class="hv-panel"><h2>Room Prices</h2><p class="hv-note">LKR per night. Changes apply to new booking requests only; existing bookings retain their saved totals.</p><div id="hv-prices-list">Loading prices…</div><p id="hv-prices-message" role="status"></p></section>
@@ -168,7 +168,7 @@ function render(): void {
       <td>${escapeHtml(b.guests)} guest(s)<small>${escapeHtml(roomName(b.room_type))}</small></td>
       <td>${extras}</td><td><strong>${amount}</strong><small>Payment: ${escapeHtml(b.payment_method || '—')}</small></td>
       <td><span class="hv-status ${escapeHtml(status)}">${escapeHtml(status)}</span></td>
-      <td><div class="hv-actions"><select data-status-for="${escapeHtml(b.id)}" aria-label="New status for booking" ${busy ? 'disabled' : ''}><option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option></select><button class="hv-btn" data-save-status="${escapeHtml(b.id)}" ${busy ? 'disabled' : ''}>${busy ? 'Saving…' : 'Save'}</button></div></td>
+      <td><div class="hv-actions"><select data-status-for="${escapeHtml(b.id)}" aria-label="New status for booking" ${busy || status === 'cancelled' ? 'disabled' : ''}><option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option></select><button class="hv-btn" data-save-status="${escapeHtml(b.id)}" ${busy || status === 'cancelled' ? 'disabled' : ''}>${status === 'cancelled' ? 'Final status' : busy ? 'Saving…' : 'Save'}</button></div>${status === 'cancelled' ? '<small>Cancelled — Final Status</small>' : ''}</td>
     </tr>`
   }).join('')
   tbody.querySelectorAll<HTMLButtonElement>('[data-save-status]').forEach(button => button.addEventListener('click', () => {
@@ -196,6 +196,10 @@ async function updateStatus(id: string, status: string): Promise<void> {
   if (!['pending', 'confirmed', 'cancelled'].includes(status)) return
   const booking = bookings.find(b => b.id === id)
   if (!booking) return
+  if ((booking.booking_status || 'pending').toLowerCase() === 'cancelled') {
+    setNotice(message, 'Cancelled bookings are final and cannot be changed.')
+    return
+  }
   if (status === 'confirmed' && booking.booking_status !== 'confirmed') {
     // Re-read inventory: the in-memory list may be stale. Do not offer a conflict override.
     const [liveBookings, liveBlocks] = await Promise.all([
@@ -225,16 +229,29 @@ async function updateStatus(id: string, status: string): Promise<void> {
   }
   if (!window.confirm(`Change booking status to “${status}” for ${booking.guest_name || 'this guest'}?`)) return
   busyIds.add(id); render(); message.className = 'hv-muted'; message.textContent = 'Saving status…'
-  const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', id)
-  busyIds.delete(id)
-  if (error) {
-    message.className = 'hv-error'; message.textContent = `Status update failed: ${error.message}`
-    render(); return
+  try {
+    const { data: updated, error } = await supabase
+      .from('bookings')
+      .update({ booking_status: status })
+      .eq('id', id)
+      .select('id,booking_status')
+
+    if (error) throw error
+    if (!updated || updated.length !== 1 || updated[0].booking_status !== status) {
+      throw new Error('Database did not confirm the update. Check Supabase admin UPDATE and SELECT RLS policies.')
+    }
+
+    await loadBookings()
+    message.className = 'hv-success'
+    message.textContent = `Booking status saved as ${status}.`
+  } catch (err) {
+    message.className = 'hv-error'
+    message.textContent = `Status update failed: ${err instanceof Error ? err.message : String(err)}`
+    render()
+  } finally {
+    busyIds.delete(id)
+    render()
   }
-  const current = bookings.find(b => b.id === id)
-  if (current) current.booking_status = status
-  message.className = 'hv-success'; message.textContent = `Booking status updated to ${status}.`
-  render()
 }
 
 const galleryGrid = document.querySelector<HTMLDivElement>('#hv-gallery-grid')!
