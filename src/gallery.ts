@@ -14,12 +14,12 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
       <img
         src="./images/logo.jpg"
-        alt="HANEUL Villa Logo"
+        alt="HANBOK Villa Logo"
         class="logo-image"
       >
 
       <div class="logo-text">
-        <span>HANEUL VILLA</span>
+        <span>HANBOK VILLA</span>
         <small>SRI LANKA</small>
       </div>
 
@@ -81,7 +81,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
     <div class="gallery-hero-content">
 
       <p class="section-subtitle">
-        DISCOVER HANEUL VILLA
+        DISCOVER HANBOK VILLA
       </p>
 
       <h1>Our Gallery</h1>
@@ -94,7 +94,13 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
       </p>
 
     </div>
-
+    <!-- Scroll Down Arrow -->
+    <a href="#guest-reviews"
+       class="gallery-scroll-down"
+       aria-label="Scroll to guest reviews">
+      <span>SCROLL TO EXPLORE</span>
+      <span class="scroll-arrow">↓</span>
+    </a>
   </section>
 
 
@@ -102,7 +108,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
      CUSTOMER REVIEWS SLIDER
 ======================================== -->
 
-<section class="reviews-section">
+<section class="reviews-section" id="guest-reviews">
 
   <div class="reviews-heading">
 

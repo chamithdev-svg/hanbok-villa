@@ -47,13 +47,21 @@ app.innerHTML = `
     <section id="hv-dashboard" hidden>
       <header class="hv-admin-head"><div><p class="hv-muted" style="margin:0 0 7px">HANBOK VILLA · PRIVATE AREA</p><h1>Admin Dashboard</h1><p class="hv-muted" style="margin:0">Manage bookings, gallery photos and guest review photos.</p></div><div class="hv-actions"><button id="hv-refresh" class="hv-btn secondary">Refresh</button><button id="hv-logout" class="hv-btn secondary">Sign out</button></div></header>
       <p id="hv-message" role="status"></p>
-      <nav class="hv-tabs" aria-label="Admin sections"><button class="hv-tab active" data-tab="bookings">Bookings</button><button class="hv-tab" data-tab="gallery">Gallery Photos</button><button class="hv-tab" data-tab="reviews">Guest Reviews</button><button class="hv-tab" data-tab="blocked">Blocked Dates</button><button class="hv-tab" data-tab="prices">Room Prices</button></nav>
+      <nav class="hv-tabs" aria-label="Admin sections"><button class="hv-tab active" data-tab="bookings">Bookings</button><button class="hv-tab" data-tab="cancellations">Cancellation Requests</button><button class="hv-tab" data-tab="gallery">Gallery Photos</button><button class="hv-tab" data-tab="reviews">Guest Reviews</button><button class="hv-tab" data-tab="blocked">Blocked Dates</button><button class="hv-tab" data-tab="prices">Room Prices</button></nav>
       <section id="hv-bookings-section" class="hv-section">
       <div class="hv-stats"><div class="hv-stat">All bookings<strong id="hv-stat-all">—</strong></div><div class="hv-stat">Pending<strong id="hv-stat-pending">—</strong></div><div class="hv-stat">Confirmed<strong id="hv-stat-confirmed">—</strong></div><div class="hv-stat">Cancelled<strong id="hv-stat-cancelled">—</strong></div></div>
       <section class="hv-panel"><div class="hv-toolbar"><input id="hv-search" type="search" placeholder="Search guest, email, phone…" aria-label="Search bookings"><select id="hv-status-filter" aria-label="Filter by status"><option value="all">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select><select id="hv-room-filter" aria-label="Filter by accommodation"><option value="all">All accommodations</option><option value="room-one">Room 1</option><option value="room-two">Room 2</option><option value="entire-villa">Entire Villa</option></select></div>
       <div class="hv-table-wrap"><table class="hv-table"><thead><tr><th>Guest</th><th>Stay</th><th>Guests / Room</th><th>Extras</th><th>Amount</th><th>Status</th><th>Update status</th></tr></thead><tbody id="hv-bookings-body"><tr><td colspan="7" class="hv-empty">Loading bookings…</td></tr></tbody></table></div>
       <p class="hv-note">Confirm only after checking availability and arranging payment with the guest. Browser checks are not a substitute for database-level protection against concurrent admin changes. Cancelling here updates the status permanently; it does not automatically refund a payment. Booking emails are handled separately by the configured notification service.</p></section>
       </section>
+       <section id="hv-cancellations-section" class="hv-section" hidden>
+         <section class="hv-panel">
+           <h2>Cancellation Requests <span id="hv-cancellation-count" class="hv-status pending">0 pending</span></h2>
+           <p class="hv-note">Approval cancels the booking but does not issue a refund. Review the guest's request and payment details first.</p>
+           <p id="hv-cancellation-message" role="status"></p>
+           <div id="hv-cancellation-list" class="hv-blocked-list">Loading cancellation requests…</div>
+         </section>
+       </section>
       <section id="hv-prices-section" class="hv-section" hidden>
         <section class="hv-panel"><h2>Room Prices</h2><p class="hv-note">LKR per night. Changes apply to new booking requests only; existing bookings retain their saved totals.</p><div id="hv-prices-list">Loading prices…</div><p id="hv-prices-message" role="status"></p></section>
       </section>
@@ -474,13 +482,113 @@ async function loadPrices(): Promise<void> {
   }))
 }
 
+type CancellationRequest = {
+  id: string
+  booking_id: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected'
+  requested_at: string
+  reviewed_at: string | null
+}
+const cancellationList = document.querySelector<HTMLElement>('#hv-cancellation-list')!
+const cancellationMessage = document.querySelector<HTMLElement>('#hv-cancellation-message')!
+const cancellationCount = document.querySelector<HTMLElement>('#hv-cancellation-count')!
+let cancellationRequests: CancellationRequest[] = []
+const busyCancellationIds = new Set<string>()
+
+function renderCancellationRequests(): void {
+  const pending = cancellationRequests.filter(r => r.status === 'pending').length
+  cancellationCount.textContent = `${pending} pending`
+  if (!cancellationRequests.length) {
+    cancellationList.innerHTML = '<p class="hv-empty">No cancellation requests found.</p>'
+    return
+  }
+  cancellationList.innerHTML = cancellationRequests.map(request => {
+    const booking = bookings.find(b => b.id === request.booking_id)
+    const busy = busyCancellationIds.has(request.id)
+    const guest = booking?.guest_name || 'Guest details unavailable'
+    const dates = booking ? `${niceDate(booking.check_in)} → ${niceDate(booking.check_out)}` : 'Booking details unavailable'
+    return `<article class="hv-blocked-item">
+      <div style="flex:1;min-width:230px;overflow-wrap:anywhere">
+        <strong>${escapeHtml(guest)}</strong> <span class="hv-status ${escapeHtml(request.status)}">${escapeHtml(request.status)}</span>
+        <p>${dates} · ${escapeHtml(booking ? roomName(booking.room_type) : '—')}</p>
+        <p><strong>Reason:</strong> ${escapeHtml(request.reason)}</p>
+        <small>${escapeHtml(booking?.email || '—')} · Booking: ${escapeHtml(request.booking_id)}</small><br>
+        <small>Requested: ${escapeHtml(new Date(request.requested_at).toLocaleString())}</small>
+        ${request.reviewed_at ? `<br><small>Reviewed: ${escapeHtml(new Date(request.reviewed_at).toLocaleString())}</small>` : ''}
+        <br><small>Booking status: ${escapeHtml(booking?.booking_status || 'unknown')}</small>
+      </div>
+      ${request.status === 'pending' ? `<div class="hv-actions">
+        <button class="hv-btn" data-cancel-approve="${escapeHtml(request.id)}" ${busy || booking?.booking_status !== 'confirmed' ? 'disabled' : ''}>${busy ? 'Processing…' : 'Approve'}</button>
+        <button class="hv-btn danger" data-cancel-reject="${escapeHtml(request.id)}" ${busy || booking?.booking_status !== 'confirmed' ? 'disabled' : ''}>Reject</button>
+      </div>` : ''}
+    </article>`
+  }).join('')
+  cancellationList.querySelectorAll<HTMLButtonElement>('[data-cancel-approve]').forEach(button =>
+    button.addEventListener('click', () => void reviewCancellation(button.dataset.cancelApprove!, 'approved')))
+  cancellationList.querySelectorAll<HTMLButtonElement>('[data-cancel-reject]').forEach(button =>
+    button.addEventListener('click', () => void reviewCancellation(button.dataset.cancelReject!, 'rejected')))
+}
+
+async function loadCancellationRequests(): Promise<void> {
+  cancellationMessage.className = 'hv-muted'
+  cancellationMessage.textContent = 'Loading cancellation requests…'
+  const { data, error } = await supabase.from('booking_cancellation_requests')
+    .select('id,booking_id,reason,status,requested_at,reviewed_at')
+    .order('requested_at', { ascending: false })
+  if (error) {
+    cancellationMessage.className = 'hv-error'
+    cancellationMessage.textContent = `Unable to load cancellation requests: ${error.message}. Check admin RLS permissions.`
+    cancellationList.innerHTML = '<p class="hv-error">Could not load requests.</p>'
+    return
+  }
+  cancellationRequests = (data || []) as CancellationRequest[]
+  cancellationMessage.className = 'hv-success'
+  cancellationMessage.textContent = `${cancellationRequests.length} cancellation request(s) loaded.`
+  renderCancellationRequests()
+}
+
+async function reviewCancellation(id: string, decision: 'approved' | 'rejected'): Promise<void> {
+  const request = cancellationRequests.find(r => r.id === id)
+  if (!request || request.status !== 'pending' || busyCancellationIds.has(id)) return
+  const booking = bookings.find(b => b.id === request.booking_id)
+  const verb = decision === 'approved' ? 'APPROVE and CANCEL the booking' : 'REJECT the cancellation request'
+  if (!window.confirm(`${verb} for ${booking?.guest_name || 'this guest'}?\n\nRefunds and guest notifications are NOT automatic.`)) return
+  busyCancellationIds.add(id)
+  renderCancellationRequests()
+  cancellationMessage.className = 'hv-muted'
+  cancellationMessage.textContent = 'Saving review…'
+  try {
+    const { data, error } = await supabase.rpc('hv_review_cancellation_request', {
+      p_request_id: id,
+      p_decision: decision,
+    })
+    if (error) throw error
+    if (data !== decision) throw new Error(`Review was not completed: ${String(data)}`)
+    await loadBookings()
+    await loadCancellationRequests()
+    cancellationMessage.className = 'hv-success'
+    cancellationMessage.textContent = decision === 'approved'
+      ? 'Cancellation approved; booking cancelled. Handle refunds and guest notification separately.'
+      : 'Cancellation rejected; booking remains confirmed. Notify the guest separately.'
+  } catch (error) {
+    cancellationMessage.className = 'hv-error'
+    cancellationMessage.textContent = `Review failed: ${error instanceof Error ? error.message : String(error)}`
+  } finally {
+    busyCancellationIds.delete(id)
+    renderCancellationRequests()
+  }
+}
+
 function activateTab(tab: string) {
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab))
   document.querySelector('#hv-bookings-section')!.toggleAttribute('hidden', tab !== 'bookings')
+  document.querySelector('#hv-cancellations-section')!.toggleAttribute('hidden', tab !== 'cancellations')
   document.querySelector('#hv-gallery-section')!.toggleAttribute('hidden', tab !== 'gallery')
   document.querySelector('#hv-reviews-section')!.toggleAttribute('hidden', tab !== 'reviews')
   document.querySelector('#hv-blocked-section')!.toggleAttribute('hidden', tab !== 'blocked')
   document.querySelector('#hv-prices-section')!.toggleAttribute('hidden', tab !== 'prices')
+  if (tab === 'cancellations') void (async () => { await loadBookings(); await loadCancellationRequests() })()
   if (tab === 'prices') void loadPrices()
   if (tab === 'blocked') void loadBlockedDates()
   if (tab === 'gallery') void loadGallery()
@@ -506,7 +614,7 @@ loginForm.addEventListener('submit', async event => {
   loginMessage.textContent = ''
   await showSession()
 })
-document.querySelector('#hv-refresh')!.addEventListener('click', () => void loadBookings())
+document.querySelector('#hv-refresh')!.addEventListener('click', () => void (async () => { await loadBookings(); if (!document.querySelector('#hv-cancellations-section')!.hasAttribute('hidden')) await loadCancellationRequests() })())
 document.querySelector('#hv-logout')!.addEventListener('click', async () => { await supabase.auth.signOut(); bookings = []; await showSession() })
 searchInput.addEventListener('input', render)
 statusFilter.addEventListener('change', render)
