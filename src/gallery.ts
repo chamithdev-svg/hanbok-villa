@@ -295,7 +295,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
         <p>📞 +94 72 518 3824</p>
         <p>✉ hanbokhikka@gmail.com</p>
-        <p>📍 Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
+        <p>📍 Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
       </div>
 
     </div>
@@ -481,3 +481,54 @@ window.addEventListener("scroll", () => {
   }
 
 });
+
+/* ==============================================================
+   HANBOK VILLA — 20 gentle flying butterflies across the page
+   Decorative only; no change to bookings, gallery, or navigation.
+   To change the count, update HANBOK_BUTTERFLY_COUNT below.
+   ============================================================== */
+const HANBOK_BUTTERFLY_COUNT = 20
+const hanbokButterflyStyles = document.createElement('style')
+hanbokButterflyStyles.id = 'hanbok-global-butterflies-style'
+hanbokButterflyStyles.textContent = `
+  .hanbok-butterfly-layer{position:fixed;inset:0;z-index:35;pointer-events:none;overflow:hidden;isolation:isolate;contain:layout style;}
+  .hanbok-butterfly{position:absolute;left:0;top:0;width:var(--bf-size);height:var(--bf-size);opacity:var(--bf-opacity);transform:translate3d(-15vw,var(--bf-y),0);animation:hanbok-butterfly-cross var(--bf-duration) linear var(--bf-delay) infinite;will-change:transform;}
+  .hanbok-butterfly .bf-sway{display:block;width:100%;height:100%;animation:hanbok-butterfly-sway var(--bf-sway-duration) ease-in-out infinite alternate;}
+  .hanbok-butterfly svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 3px rgba(45,37,27,.21));}
+  .hanbok-butterfly .bf-left-wing{transform-origin:49% 53%;animation:hanbok-butterfly-left-wing .34s ease-in-out infinite alternate;}
+  .hanbok-butterfly .bf-right-wing{transform-origin:51% 53%;animation:hanbok-butterfly-right-wing .34s ease-in-out infinite alternate;}
+  @keyframes hanbok-butterfly-cross{from{transform:translate3d(-14vw,var(--bf-y),0) rotate(-7deg)}to{transform:translate3d(114vw,calc(var(--bf-y) - var(--bf-rise)),0) rotate(9deg)}}
+  @keyframes hanbok-butterfly-sway{from{transform:translate3d(0,-24px,0) rotate(-12deg)}to{transform:translate3d(0,28px,0) rotate(12deg)}}
+  @keyframes hanbok-butterfly-left-wing{from{transform:scaleX(.54) rotate(-13deg)}to{transform:scaleX(1.04) rotate(9deg)}}
+  @keyframes hanbok-butterfly-right-wing{from{transform:scaleX(.54) rotate(13deg)}to{transform:scaleX(1.04) rotate(-9deg)}}
+  @media(max-width:700px){.hanbok-butterfly{opacity:calc(var(--bf-opacity) * .78)}.hanbok-butterfly svg{filter:drop-shadow(0 1px 2px rgba(45,37,27,.16))}}
+  @media(prefers-reduced-motion:reduce){.hanbok-butterfly-layer{display:none!important}}
+`
+document.head.appendChild(hanbokButterflyStyles)
+
+// The same lightweight decoration is generated on each public page.
+// The fixed, pointer-events:none layer follows the viewport while scrolling,
+// but never blocks clicks on photos, the navigation or booking buttons.
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const hanbokButterflyLayer = document.createElement('div')
+  hanbokButterflyLayer.className = 'hanbok-butterfly-layer'
+  hanbokButterflyLayer.setAttribute('aria-hidden', 'true')
+  const butterflyPalettes = [
+    ['#f9bd44','#a96a14'], ['#a78add','#7152ab'],
+    ['#f69fb9','#be577a'], ['#73c8b5','#2e947b'],
+    ['#91c6fa','#438ac6'], ['#fdaf76','#ce713a']
+  ]
+  for (let i = 0; i < HANBOK_BUTTERFLY_COUNT; i++) {
+    const butterfly = document.createElement('span')
+    butterfly.className = 'hanbok-butterfly'
+    const y = (i * 37 + 13) % 94
+    const size = 20 + (i * 13) % 19
+    const duration = 16 + (i * 7) % 17
+    const delay = -(i * 2.63) % duration
+    const [wing, edge] = butterflyPalettes[i % butterflyPalettes.length]
+    butterfly.style.cssText = `--bf-size:${size}px;--bf-y:${y}vh;--bf-rise:${(i%5-2)*18}vh;--bf-duration:${duration}s;--bf-delay:${delay}s;--bf-sway-duration:${2+(i%5)*.5}s;--bf-opacity:${(.65+(i%4)*.075).toFixed(2)};`
+    butterfly.innerHTML = `<span class="bf-sway"><svg viewBox="0 0 64 62" focusable="false" aria-hidden="true"><g class="bf-left-wing"><path d="M31 30C14 -1 -4 3 5 26C-7 42 17 54 31 34Z" fill="${wing}" stroke="${edge}" stroke-width="1.8"/><path d="M24 30C17 18 12 15 9 13M22 36C17 40 13 42 11 42" fill="none" stroke="${edge}" stroke-width="1.5" opacity=".6"/></g><g class="bf-right-wing"><path d="M33 30C50 -1 68 3 59 26C71 42 47 54 33 34Z" fill="${wing}" stroke="${edge}" stroke-width="1.8"/><path d="M40 30C47 18 52 15 55 13M42 36C47 40 51 42 53 42" fill="none" stroke="${edge}" stroke-width="1.5" opacity=".6"/></g><path d="M32 23V45" stroke="#473b34" stroke-width="3" stroke-linecap="round"/><path d="M32 24Q26 14 23 14M32 24Q38 14 41 14" stroke="#473b34" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></span>`
+    hanbokButterflyLayer.appendChild(butterfly)
+  }
+  document.body.appendChild(hanbokButterflyLayer)
+}

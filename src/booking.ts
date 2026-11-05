@@ -797,6 +797,18 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 
 
+          <!-- One-time 5% discount coupon -->
+          <div class="form-group" id="hv-coupon-box" style="padding:16px;border:1px solid #ddcfb3;border-radius:10px;margin:20px 0;background:#faf8f3">
+            <label for="hv-coupon-code">Discount Coupon (optional)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="hv-coupon-code" type="text" maxlength="32" autocomplete="off" placeholder="Enter coupon code" style="flex:1;min-width:160px;text-transform:uppercase">
+              <button id="hv-coupon-apply" type="button" class="booking-submit-btn" style="width:auto;min-width:105px;margin:0;padding:12px 16px">Apply</button>
+              <button id="hv-coupon-clear" type="button" style="padding:10px 14px;border:1px solid #ccc;background:#fff;cursor:pointer">Clear</button>
+            </div>
+            <p id="hv-coupon-notice" role="status" style="font-size:13px;margin:9px 0 0;color:#666">Valid codes give 5% off the total stay price; one use per code.</p>
+            <p id="hv-coupon-discount" style="font-weight:700;color:#176a38;margin:8px 0 0"></p>
+          </div>
+
           <!-- Special Request -->
 
           <div class="form-group">
@@ -914,7 +926,25 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
           </div>
 
+          <!-- Contact number required by the group-inquiry Edge Function -->
+          <div class="form-group">
+            <label for="groupPhone">Phone / WhatsApp *</label>
+            <input
+              type="tel"
+              id="groupPhone"
+              name="groupPhone"
+              placeholder="+94 77 123 4567"
+              autocomplete="tel"
+              maxlength="40"
+              required
+            >
+          </div>
 
+          <!-- Spam honeypot: keep hidden from real visitors -->
+          <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+            <label for="groupWebsite">Leave this field empty</label>
+            <input type="text" id="groupWebsite" name="groupWebsite" tabindex="-1" autocomplete="off">
+          </div>
 
           <div class="form-row">
 
@@ -995,6 +1025,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             SEND GROUP REQUEST
 
           </button>
+          <p id="groupFormStatus" role="status" aria-live="polite" style="margin-top:14px;font-size:14px"></p>
 
         </form>
 
@@ -1271,18 +1302,44 @@ const largeGroupForm =
   )
 
 
-largeGroupForm?.addEventListener(
-  'submit',
-  (event) => {
+largeGroupForm?.addEventListener('submit', async (event) => {
+  event.preventDefault()
+  if (!largeGroupForm.reportValidity()) return
 
-    event.preventDefault()
+  const status = document.querySelector<HTMLElement>('#groupFormStatus')
+  const button = largeGroupForm.querySelector<HTMLButtonElement>('button[type="submit"]')
+  const name = document.querySelector<HTMLInputElement>('#groupName')?.value.trim() || ''
+  const email = document.querySelector<HTMLInputElement>('#groupEmail')?.value.trim() || ''
+  const phone = document.querySelector<HTMLInputElement>('#groupPhone')?.value.trim() || ''
+  const checkIn = document.querySelector<HTMLInputElement>('#groupCheckin')?.value || ''
+  const checkOut = document.querySelector<HTMLInputElement>('#groupCheckout')?.value || ''
+  const guestCount = Number(document.querySelector<HTMLInputElement>('#groupGuests')?.value || 0)
+  const message = document.querySelector<HTMLTextAreaElement>('#groupMessage')?.value.trim() || ''
+  const website = document.querySelector<HTMLInputElement>('#groupWebsite')?.value || ''
 
-    alert(
-      'Thank you! Your group request has been received.'
-    )
-
+  const localToday = new Date()
+  const todayString = `${localToday.getFullYear()}-${String(localToday.getMonth() + 1).padStart(2, '0')}-${String(localToday.getDate()).padStart(2, '0')}`
+  if (checkIn < todayString || checkOut <= checkIn || !Number.isSafeInteger(guestCount) || guestCount < 5 || guestCount > 100) {
+    if (status) { status.style.color = '#a12626'; status.textContent = 'Please check the dates and number of guests (5–100).' }
+    return
   }
-)
+
+  if (button) { button.disabled = true; button.textContent = 'SENDING REQUEST…' }
+  if (status) { status.style.color = '#555'; status.textContent = 'Sending your group inquiry…' }
+  try {
+    const { data, error } = await supabase.functions.invoke('group-inquiry', {
+      body: { name, email, phone, checkIn, checkOut, guestCount, message, website }
+    })
+    if (error || !data?.success) throw new Error(data?.error || error?.message || 'Email delivery could not be confirmed.')
+    if (status) { status.style.color = '#176a38'; status.textContent = 'Thank you! Your inquiry was sent. Our team will contact you about availability and a quote.' }
+    largeGroupForm.reset()
+  } catch (error) {
+    console.error('Group inquiry failed:', error)
+    if (status) { status.style.color = '#a12626'; status.textContent = 'Sorry, your inquiry could not be sent. Please try again or contact us using the email/WhatsApp links below.' }
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'SEND GROUP REQUEST' }
+  }
+})
 
 
 /* ========================================
@@ -1895,6 +1952,47 @@ function getNumberOfNights() {
    STEP 9 - PROFESSIONAL PRICE SUMMARY
 ======================================== */
 
+// Coupon is displayed as an estimate. The DB trigger re-checks and charges
+// exactly once at INSERT time; the browser cannot authorize a discount.
+let hvAppliedCoupon = ''
+const hvCouponInput = document.querySelector<HTMLInputElement>('#hv-coupon-code')!
+const hvCouponNotice = document.querySelector<HTMLElement>('#hv-coupon-notice')!
+const hvCouponDiscount = document.querySelector<HTMLElement>('#hv-coupon-discount')!
+function hvResetCoupon(message = 'Enter a code and click Apply.'): void {
+  hvAppliedCoupon = ''
+  hvCouponDiscount.textContent = ''
+  hvCouponNotice.textContent = message
+  hvCouponNotice.style.color = '#666'
+  calculateBookingPrice()
+}
+
+document.querySelector<HTMLButtonElement>('#hv-coupon-apply')!.addEventListener('click', async () => {
+  const code = hvCouponInput.value.trim().toUpperCase()
+  if (!/^[A-Z0-9-]{6,32}$/.test(code)) { hvResetCoupon('Enter a valid coupon code.'); return }
+  hvCouponNotice.textContent = 'Checking coupon…'
+  hvCouponNotice.style.color = '#666'
+  try {
+    const { data, error } = await supabase.rpc('hv_validate_coupon', { p_code: code })
+    if (error) throw error
+    if (data !== true) { hvResetCoupon('Invalid or already-used coupon.'); return }
+    hvAppliedCoupon = code
+    hvCouponInput.value = code
+    hvCouponNotice.textContent = '5% coupon applied. Final validity is checked when you submit the booking.'
+    hvCouponNotice.style.color = '#176a38'
+    calculateBookingPrice()
+  } catch (err) {
+    console.error('Coupon validation failed:', err)
+    hvResetCoupon('Could not check coupon. Try again.')
+  }
+})
+document.querySelector<HTMLButtonElement>('#hv-coupon-clear')!.addEventListener('click', () => {
+  hvCouponInput.value = ''
+  hvResetCoupon()
+})
+hvCouponInput.addEventListener('input', () => {
+  if (hvAppliedCoupon && hvCouponInput.value.trim().toUpperCase() !== hvAppliedCoupon) hvResetCoupon('Code changed. Click Apply to validate it.')
+})
+
 function calculateBookingPrice() {
 
 
@@ -1934,6 +2032,7 @@ function calculateBookingPrice() {
 
     remainingBalance!.textContent =
       'Price will be calculated'
+    hvCouponDiscount.textContent = ''
 
   }
 
@@ -2011,14 +2110,16 @@ const pricePerNightLkr = nightlyPrice(accommodation.value, Number(guests?.value 
 
   /* Payment Calculation */
 
+  const payableTotal = hvAppliedCoupon ? Math.round(totalPrice * 95) / 100 : totalPrice
+  hvCouponDiscount.textContent = hvAppliedCoupon ? `5% discount: −${formatCurrency(totalPrice - payableTotal)} · Final total: ${formatCurrency(payableTotal)}` : ''
   const payNowAmount =
     isDeposit
-      ? totalPrice * 0.30
-      : totalPrice
+      ? payableTotal * 0.30
+      : payableTotal
 
 
   const remainingAmount =
-    totalPrice - payNowAmount
+    payableTotal - payNowAmount
 
 
   /* Currency */
@@ -2034,7 +2135,7 @@ const pricePerNightLkr = nightlyPrice(accommodation.value, Number(guests?.value 
   /* Update Summary */
 
   totalStayPrice!.textContent =
-    formatPrice(totalPrice)
+    formatPrice(payableTotal)
 
 
   payNowPrice!.textContent =
@@ -2058,6 +2159,14 @@ const pricePerNightLkr = nightlyPrice(accommodation.value, Number(guests?.value 
 
 }
 
+
+
+// Changing the underlying stay invalidates a previously applied coupon estimate.
+for (const field of [guests, accommodation, checkin, checkout]) {
+  field?.addEventListener('change', () => {
+    if (hvAppliedCoupon) hvResetCoupon('Stay changed. Reapply your coupon before booking.')
+  })
+}
 
 /* ========================================
    PRICE CALCULATION LIVE UPDATE
@@ -2483,7 +2592,9 @@ bookingForm?.addEventListener(
             p_check_out: bookingData.stay.checkout,
             p_guests: Number(bookingData.stay.guests),
             p_room_type: bookingData.stay.room,
-            p_extra_services: bookingData.services,
+            // Marker is interpreted atomically by the BEFORE INSERT DB trigger.
+            // Do not send a client-calculated discount/total amount.
+            p_extra_services: hvAppliedCoupon ? [...bookingData.services, `coupon:${hvAppliedCoupon}`] : bookingData.services,
             p_payment_method: bookingData.payment.type
           })
 
@@ -2498,6 +2609,8 @@ bookingForm?.addEventListener(
           // Only clear the form after Supabase confirms the booking was saved.
           confirmationModal.remove()
           bookingForm?.reset()
+          hvCouponInput.value = ''
+          hvResetCoupon('Enter a code and click Apply.')
 
           // Reset the display currency to LKR and refresh the price summary.
           selectedCurrency = 'LKR'

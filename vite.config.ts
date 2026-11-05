@@ -1,9 +1,9 @@
-
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
 
 export default defineConfig({
   base: '/hanbok-villa/',
+
   build: {
     rollupOptions: {
       input: {
@@ -12,6 +12,7 @@ export default defineConfig({
         gallery: resolve(process.cwd(), 'gallery.html'),
         explore: resolve(process.cwd(), 'explore.html'),
         admin: resolve(process.cwd(), 'admin.html'),
+        cancellation: resolve(process.cwd(), 'cancel-booking.html'),
       },
     },
   },

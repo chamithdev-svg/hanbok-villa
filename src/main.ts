@@ -2,6 +2,26 @@ import './style.css'
 import { supabase } from './supabase'
 
 // Rooms layout: villa details on the left, room cards on the right.
+
+// A small coastal turtle walk on the PUBLIC homepage only.
+// Decorative, keyboard-inert, responsive and disabled for reduced-motion users.
+document.head.insertAdjacentHTML('beforeend', `
+<style id="hanbok-sea-turtle-walk-styles">
+  .hv-turtle-walk{position:relative;isolation:isolate;overflow:hidden;min-height:126px;margin:32px auto 0;width:min(100%,1180px);border-radius:18px;background:linear-gradient(180deg,rgba(227,244,236,.30),rgba(249,231,188,.50) 74%,rgba(233,207,155,.45));pointer-events:none}
+  .hv-turtle-walk::before{content:"";position:absolute;inset:auto 0 15px;height:2px;background:repeating-linear-gradient(90deg,rgba(165,133,86,.24) 0 18px,transparent 18px 32px)}
+  .hv-turtle-walk-label{position:absolute;top:13px;left:0;right:0;text-align:center;font:600 10px/1.4 Arial,sans-serif;letter-spacing:.22em;color:#638375;text-transform:uppercase}
+  .hv-turtle{--shell:#477e68;--flipper:#4c9275;position:absolute;bottom:18px;left:-104px;width:92px;height:55px;animation:hv-turtle-cross 33s linear infinite;will-change:left}
+  .hv-turtle svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 2px rgba(45,85,66,.14));animation:hv-turtle-step 1.8s ease-in-out infinite}
+  .hv-turtle .shell{fill:var(--shell)}.hv-turtle .skin{fill:var(--flipper)}.hv-turtle .shell-mark{fill:none;stroke:rgba(243,238,190,.52);stroke-width:2.4;stroke-linejoin:round}
+  .hv-turtle:nth-child(3){--shell:#779369;--flipper:#6a9c7a;bottom:42px;width:72px;height:43px;animation-duration:41s;animation-delay:-17s;opacity:.92}
+  .hv-turtle:nth-child(4){--shell:#527d82;--flipper:#6da99a;bottom:8px;width:61px;height:38px;animation-duration:29s;animation-delay:-10s;opacity:.87}
+  .hv-turtle:nth-child(3) svg{animation-delay:-.65s}.hv-turtle:nth-child(4) svg{animation-delay:-1.1s}
+  @keyframes hv-turtle-cross{from{left:-104px}to{left:calc(100% + 8px)}}
+  @keyframes hv-turtle-step{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
+  @media(max-width:650px){.hv-turtle-walk{min-height:100px;border-radius:12px;margin-top:22px}.hv-turtle-walk-label{font-size:9px}.hv-turtle{width:73px;height:44px}.hv-turtle:nth-child(3){width:60px;height:36px;bottom:35px}.hv-turtle:nth-child(4){width:51px;height:32px}}
+  @media(prefers-reduced-motion:reduce){.hv-turtle,.hv-turtle svg{animation:none!important}.hv-turtle{left:8%!important}.hv-turtle:nth-child(3){left:42%!important}.hv-turtle:nth-child(4){left:76%!important}}
+</style>`)
+
 document.head.insertAdjacentHTML('beforeend', `
 <style id="hanbok-rooms-layout-overrides">
 .rooms-layout{width:min(96%,1600px);margin:0 auto;display:grid;grid-template-columns:minmax(250px,0.78fr) minmax(0,2.22fr);gap:22px;align-items:stretch;box-sizing:border-box}
@@ -24,6 +44,23 @@ document.head.insertAdjacentHTML('beforeend', `
 .rooms-layout .room-card h3{overflow-wrap:anywhere}
 @media(max-width:1200px){.rooms-layout{grid-template-columns:minmax(220px,0.75fr) minmax(0,1.8fr);gap:16px}.rooms-layout .room-grid{grid-template-columns:1fr}.rooms-layout .room-image img{height:190px}}
 @media(max-width:760px){.rooms-layout{width:92%;grid-template-columns:minmax(0,1fr);gap:18px}.rooms-villa-panel{grid-column:1;padding:22px}.rooms-layout .room-grid{grid-column:1;grid-template-columns:1fr}.rooms-layout .room-image img{height:240px}}
+</style>`)
+
+// HANBOK VILLA — gentle butterflies and scroll-reveal enhancement.
+// CSS-only butterfly motion; respects OS reduced-motion preference.
+document.head.insertAdjacentHTML('beforeend', `
+<style id="hv-butterfly-scroll-styles">
+  .about{position:relative;isolation:isolate}
+  .hv-butterfly-garden{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2;contain:layout paint}
+  .hv-butterfly{position:absolute;display:block;width:clamp(44px,4.2vw,62px);height:clamp(44px,4.2vw,62px);left:var(--left);top:var(--top);opacity:.94;animation:hv-butterfly-float var(--speed) ease-in-out infinite alternate;animation-delay:var(--delay)}
+  .hv-butterfly svg{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 5px rgba(22,58,38,.23));animation:hv-butterfly-flap .48s ease-in-out infinite alternate}
+  .hv-butterfly:nth-child(even) svg{animation-duration:.62s}.hv-butterfly:nth-child(3n) svg{animation-duration:.54s}
+  @keyframes hv-butterfly-float{0%{transform:translate3d(-12px,10px,0) rotate(-11deg)}50%{transform:translate3d(32px,-18px,0) rotate(12deg)}100%{transform:translate3d(72px,12px,0) rotate(-6deg)}}
+  @keyframes hv-butterfly-flap{from{transform:scaleX(.58) rotate(-5deg)}to{transform:scaleX(1) rotate(5deg)}}
+  .hv-reveal-ready{opacity:0;transform:translate3d(0,24px,0);transition:opacity .72s ease,transform .72s cubic-bezier(.18,.65,.25,1);transition-delay:var(--hv-reveal-delay,0ms)}
+  .hv-reveal-ready.hv-reveal-visible{opacity:1;transform:none}
+  @media(max-width:760px){.hv-butterfly{width:35px;height:35px;opacity:.92}.hv-reveal-ready{transform:translate3d(0,14px,0)}}
+  @media(prefers-reduced-motion:reduce){.hv-butterfly,.hv-butterfly svg{animation:none!important}.hv-reveal-ready{opacity:1!important;transform:none!important;transition:none!important}}
 </style>`)
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -135,6 +172,17 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     ======================================== -->
 
     <section class="about" id="about">
+    <!-- Decorative butterflies, hidden from screen readers; no interaction. -->
+    <div class="hv-butterfly-garden" aria-hidden="true">
+      <span class="hv-butterfly" style="--left:6%;--top:14%;--speed:8s;--delay:-2s;--wing:#e5a537;--accent:#ffe5a0"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="hv-butterfly" style="--left:78%;--top:12%;--speed:11s;--delay:-7s;--wing:#a783dc;--accent:#f1d8ff"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="hv-butterfly" style="--left:48%;--top:72%;--speed:13s;--delay:-2s;--wing:#43a992;--accent:#c7f6df"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="hv-butterfly" style="--left:22%;--top:61%;--speed:10s;--delay:-5s;--wing:#ec7595;--accent:#ffd4dd"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="hv-butterfly" style="--left:87%;--top:70%;--speed:12s;--delay:-8s;--wing:#4b9bdb;--accent:#c2e7ff"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="hv-butterfly" style="--left:58%;--top:30%;--speed:9s;--delay:-4s;--wing:#ef8b43;--accent:#ffda9b"><svg viewBox="0 0 56 56" aria-hidden="true" focusable="false"><path fill="var(--wing)" d="M27 26C20 3 4 5 5 19c1 10 12 16 22 13C9 35 10 50 20 47c5-1 8-7 8-13 0 6 4 12 9 13 10 3 11-12-7-15 10 3 21-3 22-13C53 5 36 3 29 26Z"/><path fill="var(--accent)" opacity=".58" d="M27 28C15 15 8 16 10 24c2 5 9 8 17 7m2-3c12-13 19-12 17-4-2 5-9 8-17 7"/><path d="M28 24v15" stroke="#374c37" stroke-width="2.4" stroke-linecap="round"/><path d="m28 25-4-7m4 7 4-7" stroke="#374c37" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
+    
+    </div>
+
 
       <!-- Left side - Villa image -->
       <div class="about-image">
@@ -208,7 +256,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
       <div class="rooms-location-card">
         <span class="rooms-contact-icon">📍</span>
-        <div><strong>Our Location</strong><p>Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p><small>Near Hikkaduwa Beach</small></div>
+        <div><strong>Our Location</strong><p>Panvila Road, 80240 Hikkaduwa, Sri Lanka</p><small>Near Hikkaduwa Beach</small></div>
       </div>
       <div class="rooms-contact-card">
         <span class="rooms-contact-icon">✉️</span>
@@ -328,7 +376,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card large-group-card">
 
     <div class="room-image">
-      <img src="./images/large-group.jpg" alt="Large Group Stay">
+      <img src="./images/large-group.png" alt="Large Group Stay">
     </div>
 
     <div class="room-info">
@@ -750,7 +798,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Beautiful Location</h3>
 
       <p>
-        Find us at Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka, near local attractions.
+        Find us at Panvila Road, 80240 Hikkaduwa, Sri Lanka, near local attractions.
       </p>
 
     </div>
@@ -973,6 +1021,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
   </div>
 
+  <!-- Gentle sea turtle walk — purely decorative, no effect on bookings or navigation. -->
+  <div class="hv-turtle-walk" aria-hidden="true">
+    <div class="hv-turtle-walk-label">A Little Hikkaduwa Magic · Sea Turtle Walk</div>
+    <div class="hv-turtle"><svg viewBox="0 0 120 70" aria-hidden="true" focusable="false"><path class="skin" d="M38 36 19 25 14 33 32 43 19 52 25 61 44 49M77 34 87 20 97 27 86 43 96 50 91 61 74 48"/><path class="skin" d="M88 35c10-14 27-10 27 4s-18 16-26 8"/><circle cx="105" cy="37" r="2" fill="#173c31"/><path class="skin" d="m39 48-7 15 11-6m24-8 7 15 7-14"/><ellipse class="shell" cx="61" cy="40" rx="35" ry="24"/><path class="shell-mark" d="m43 25 15-5 15 6 8 15-13 15H50L37 42Zm15-5-5 19 15 17m-31-14 16-3 28 2"/></svg></div>
+    <div class="hv-turtle"><svg viewBox="0 0 120 70" aria-hidden="true" focusable="false"><path class="skin" d="M38 36 19 25 14 33 32 43 19 52 25 61 44 49M77 34 87 20 97 27 86 43 96 50 91 61 74 48"/><path class="skin" d="M88 35c10-14 27-10 27 4s-18 16-26 8"/><circle cx="105" cy="37" r="2" fill="#173c31"/><path class="skin" d="m39 48-7 15 11-6m24-8 7 15 7-14"/><ellipse class="shell" cx="61" cy="40" rx="35" ry="24"/><path class="shell-mark" d="m43 25 15-5 15 6 8 15-13 15H50L37 42Zm15-5-5 19 15 17m-31-14 16-3 28 2"/></svg></div>
+    <div class="hv-turtle"><svg viewBox="0 0 120 70" aria-hidden="true" focusable="false"><path class="skin" d="M38 36 19 25 14 33 32 43 19 52 25 61 44 49M77 34 87 20 97 27 86 43 96 50 91 61 74 48"/><path class="skin" d="M88 35c10-14 27-10 27 4s-18 16-26 8"/><circle cx="105" cy="37" r="2" fill="#173c31"/><path class="skin" d="m39 48-7 15 11-6m24-8 7 15 7-14"/><ellipse class="shell" cx="61" cy="40" rx="35" ry="24"/><path class="shell-mark" d="m43 25 15-5 15 6 8 15-13 15H50L37 42Zm15-5-5 19 15 17m-31-14 16-3 28 2"/></svg></div>
+  </div>
+
 </section>
 
 <!-- ========================================
@@ -1138,7 +1194,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       <p>📞 +94 72 518 3824</p>
       <p>✉ hanbokhikka@gmail.com</p>
-      <p>📍 Nagaha Kade, Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
+      <p>📍  Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
 
     </div>
 
@@ -1157,6 +1213,30 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
   </main>
 `
+
+// Scroll-in effects are progressive enhancement: content remains visible if
+// IntersectionObserver is unsupported, or reduced motion is requested.
+const revealTargets = document.querySelectorAll<HTMLElement>(
+  '.about-image, .about-content, .rooms-villa-panel, .room-card, .facilities-heading, .facility-card, .services-heading, .service-card, .location-heading, .location-card, .nearby-heading, .nearby-card, .gallery-heading, .contact-content'
+)
+const prefersLessMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+if ('IntersectionObserver' in window && !prefersLessMotion) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return
+      const target = entry.target as HTMLElement
+      target.classList.add('hv-reveal-visible')
+      observer.unobserve(target)
+    })
+  }, { rootMargin: '0px 0px -25px 0px', threshold: 0.06 })
+  revealTargets.forEach((el, index) => {
+    // Skip above-the-fold targets so the browser never hides initially visible content.
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.8) return
+    el.style.setProperty('--hv-reveal-delay', `${(index % 3) * 65}ms`)
+    el.classList.add('hv-reveal-ready')
+    revealObserver.observe(el)
+  })
+}
 
 /* ========================================
    BACK TO TOP BUTTON
