@@ -828,7 +828,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 
 
-          <!-- Submit -->
+                     <!-- Cloudflare Turnstile: verification is REQUIRED and checked server-side. -->
+           <div class="form-group" style="margin:20px 0">
+             <label style="display:block;margin-bottom:10px">Security verification *</label>
+             <div id="hv-turnstile-widget"></div>
+             <small style="color:#666">Please complete this check before submitting your booking.</small>
+           </div>
+
+           <!-- Submit -->
 
           <button
             type="submit"
@@ -2583,7 +2590,18 @@ bookingForm?.addEventListener(
           }
 
           // Atomic server-side room allocation. The database selects Room 1 or Room 2.
-          const { error } = await supabase.rpc('hv_submit_booking_request', {
+          const captchaToken = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value || ''
+          if (!captchaToken) {
+            alert('Please complete the security verification before booking.')
+            confirmPayment.disabled = false
+            confirmPayment.textContent = 'CONFIRM BOOKING REQUEST'
+            return
+          }
+          // All booking requests are verified by the Edge Function before reaching the database RPC.
+          const { data: bookingResponse, error } = await supabase.functions.invoke('submit-booking', {
+            body: {
+              turnstileToken: captchaToken,
+              booking: {
             p_guest_name: bookingData.guest.name,
             p_email: bookingData.guest.email,
             p_phone: bookingData.guest.phone,
@@ -2596,35 +2614,39 @@ bookingForm?.addEventListener(
             // Do not send a client-calculated discount/total amount.
             p_extra_services: hvAppliedCoupon ? [...bookingData.services, `coupon:${hvAppliedCoupon}`] : bookingData.services,
             p_payment_method: bookingData.payment.type
+              }
+            }
           })
 
-          if (error) {
-            console.error('Supabase booking insert failed:', error)
-            alert(`Could not save your booking: ${error.message}`)
+          if (error || bookingResponse?.success !== true) {
+            console.error('Supabase booking insert failed:', error);
+            // CAPTCHA tokens are single use; reset for the next attempt.
+            (window as Window & { turnstile?: { reset: () => void } }).turnstile?.reset()
+            alert(bookingResponse?.error || error?.message || 'Booking was not accepted. Please try again.')
             confirmPayment.disabled = false
             confirmPayment.textContent = 'CONFIRM BOOKING REQUEST'
             return
           }
 
-          // Only clear the form after Supabase confirms the booking was saved.
+          // IMPORTANT: The database has already confirmed success at this point.
+          // Show success regardless of any later UI reset/recalculation error.
           confirmationModal.remove()
-          bookingForm?.reset()
-          hvCouponInput.value = ''
-          hvResetCoupon('Enter a code and click Apply.')
+          alert('Your booking request has been saved and is pending confirmation. We will contact you to confirm availability, payment, breakfast, and any selected extra services.')
 
-          // Reset the display currency to LKR and refresh the price summary.
-          selectedCurrency = 'LKR'
-          if (currencySelector) {
-            currencySelector.value = 'LKR'
+          try {
+            bookingForm?.reset()
+            hvCouponInput.value = ''
+            ;(window as Window & { turnstile?: { reset: () => void } }).turnstile?.reset()
+            hvResetCoupon('Enter a code and click Apply.')
+            selectedCurrency = 'LKR'
+            if (currencySelector) currencySelector.value = 'LKR'
+            document.querySelector('#availabilityStatus')?.remove()
+            calculateBookingPrice()
+          } catch (cleanupError) {
+            // The booking was SAVED. Never tell the guest to resubmit.
+            console.error('Booking saved, but form reset failed:', cleanupError)
+            alert('Your booking was saved successfully. The form could not be fully reset; please refresh the page before making another booking.')
           }
-
-          // Remove any availability message for the previous dates.
-          document.querySelector('#availabilityStatus')?.remove()
-
-          // Recalculate the empty/default form state.
-          calculateBookingPrice()
-
-          alert('Your booking request has been saved and is pending confirmation. The form has been cleared for the next booking. We will contact you to confirm availability, payment, breakfast, and any selected extra services.')
         } catch (error) {
           console.error('Booking submission error:', error)
           alert('Something went wrong while saving your booking. Please try again.')
@@ -2871,3 +2893,19 @@ void loadExchangeRate()
 
 // Initialize disabled accommodation options on page load.
 syncAccommodationOptions()
+
+
+/* HANBOK booking Turnstile widget: replace test key with a real site key before publishing. */
+const HV_TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAF0m7b9iadn-xB-i'
+type HvTurnstile = { render: (selector: string, settings: { sitekey: string }) => string; reset: () => void }
+const hvCaptchaScript = document.createElement('script')
+hvCaptchaScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+hvCaptchaScript.async = true
+hvCaptchaScript.defer = true
+hvCaptchaScript.addEventListener('load', () => {
+  const api = (window as Window & { turnstile?: HvTurnstile }).turnstile
+  if (api && document.querySelector('#hv-turnstile-widget')) {
+    api.render('#hv-turnstile-widget', { sitekey: HV_TURNSTILE_SITE_KEY })
+  }
+})
+document.head.appendChild(hvCaptchaScript)
