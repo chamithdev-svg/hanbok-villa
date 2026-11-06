@@ -296,7 +296,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
 
       <p class="room-description"><strong>🍳 Complimentary breakfast included.</strong></p>
-      <p class="room-description"><strong>✈️ One free airport transfer per booking — choose pickup OR drop-off.</strong></p>
       <p class="room-description"><strong>🛵 Scooter rental available at an additional charge.</strong></p>
       <p class="room-description scooter-terms">A valid driving licence and document verification may be required. Additional charges apply. A refundable security deposit is required before the scooty is handed over.</p>
 
@@ -346,7 +345,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
 
       <p class="room-description"><strong>🍳 Complimentary breakfast included.</strong></p>
-      <p class="room-description"><strong>✈️ One free airport transfer per booking — choose pickup OR drop-off.</strong></p>
       <p class="room-description"><strong>🛵 Scooter rental available at an additional charge.</strong></p>
       <p class="room-description scooter-terms">A valid driving licence and document verification may be required. Additional charges apply. A refundable security deposit is required before the scooty is handed over.</p>
 

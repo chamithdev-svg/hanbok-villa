@@ -122,7 +122,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
     <p>
       Discover what our guests loved about their stay
-      at HANEUL Villa.
+      at HANBOK Villa.
     </p>
 
   </div>
@@ -259,7 +259,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
       <div class="footer-column footer-brand">
 
-        <h3>HANEUL VILLA</h3>
+        <h3>HANBOK VILLA</h3>
 
         <p class="footer-location">
           GALLE, SRI LANKA
@@ -304,7 +304,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
     <div class="footer-bottom">
 
       <p>
-        © 2026 HANEUL VILLA. ALL RIGHTS RESERVED.
+        © 2026 HANBOK VILLA. ALL RIGHTS RESERVED.
       </p>
 
     </div>
@@ -394,8 +394,8 @@ async function loadManagedGallery(): Promise<void> {
   managedGalleryGrid.innerHTML = data.map((media) => `
     <div class="gallery-page-item">
       ${media.media_type === 'video'
-        ? `<video src="${escapeHtml(media.image_url)}" controls playsinline preload="metadata" aria-label="${escapeHtml(media.caption || 'HANEUL Villa video')}"></video>`
-        : `<img src="${escapeHtml(media.image_url)}" alt="${escapeHtml(media.caption || 'HANEUL Villa')}" loading="lazy">`}
+        ? `<video src="${escapeHtml(media.image_url)}" controls playsinline preload="metadata" aria-label="${escapeHtml(media.caption || 'HANBOK Villa video')}"></video>`
+        : `<img src="${escapeHtml(media.image_url)}" alt="${escapeHtml(media.caption || 'HANBOK Villa')}" loading="lazy">`}
       ${media.caption ? `<p class="gallery-photo-caption">${escapeHtml(media.caption)}</p>` : ''}
     </div>
   `).join('')

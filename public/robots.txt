@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://chamithdev-svg.github.io/hanbok-villa/sitemap.xml
+Sitemap: https://hanbokvilla.com/sitemap.xml

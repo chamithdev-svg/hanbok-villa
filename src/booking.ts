@@ -1121,7 +1121,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       <p>📞 +94 72-518-3824</p>
       <p>✉ hanbokhikka@gmail.com</p>
-      <p>📍 Hikkaduwa, Sri Lanka</p>
+      <p>📍 Panvila Road, 80240 Hikkaduwa, Sri Lanka</p>
 
     </div>
 

@@ -118,7 +118,8 @@ app.innerHTML = `
         <label for="hv-email">Admin email</label><input id="hv-email" type="email" autocomplete="username" required>
         <label for="hv-password">Password</label><input id="hv-password" type="password" autocomplete="current-password" required>
         <button class="hv-btn" style="width:100%;margin-top:18px" type="submit">Sign in</button>
-        <p id="hv-login-message" class="hv-error" role="status"></p>
+        <p id="hv-login-message" class="hv-error" role="status" aria-live="polite"></p>
+        <p class="hv-note" style="margin-top:12px">Security: 5 incorrect sign-in attempts lock this browser for 10 minutes. Admin sessions sign out after 10 minutes of inactivity.</p>
       </form>
       <p class="hv-note">Use an admin account created in Supabase Authentication. Public sign-up is not provided on this page.</p>
     </section>
@@ -1089,26 +1090,255 @@ function activateTab(tab: string) {
 }
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab!)))
 
+// Admin UI safeguards: 10-minute inactivity sign-out and a 10-minute
+// per-browser login cooldown after 5 invalid credentials. Supabase RLS + admin
+// membership are still the authorization boundary. The login cooldown is NOT
+// a server-wide rate limiter: browser storage can be cleared or bypassed.
+const HV_ADMIN_IDLE_MS = 10 * 60 * 1000
+const HV_LOGIN_LOCK_MS = 10 * 60 * 1000
+const HV_LOGIN_MAX_FAILURES = 5
+const HV_LOGIN_LOCK_KEY = 'hv_admin_login_cooldown_v1'
+const HV_ADMIN_ACTIVITY_KEY = 'hv_admin_last_activity_v1'
+type HvLoginCooldown = { attempts: number; firstFailureAt: number; lockedUntil: number }
+let memoryLoginCooldown: HvLoginCooldown = { attempts: 0, firstFailureAt: 0, lockedUntil: 0 }
+let memoryLastActivity = 0
+const loginButton = loginForm.querySelector<HTMLButtonElement>('button[type="submit"]')!
+let adminAuthCheckVersion = 0
+let adminAuthorized = false
+let adminSignoutInProgress = false
+let loginRequestInProgress = false
+let lastActivityWrite = 0
+
+function readLoginCooldown(): HvLoginCooldown {
+  try {
+    const raw = window.localStorage.getItem(HV_LOGIN_LOCK_KEY)
+    if (raw) {
+      const obj: unknown = JSON.parse(raw)
+      if (typeof obj === 'object' && obj !== null &&
+          'attempts' in obj && 'firstFailureAt' in obj && 'lockedUntil' in obj &&
+          Number.isFinite(Number(obj.attempts)) && Number.isFinite(Number(obj.firstFailureAt)) &&
+          Number.isFinite(Number(obj.lockedUntil))) {
+        return {
+          attempts: Math.max(0, Math.min(HV_LOGIN_MAX_FAILURES, Number(obj.attempts))),
+          firstFailureAt: Math.max(0, Number(obj.firstFailureAt)),
+          lockedUntil: Math.max(0, Number(obj.lockedUntil))
+        }
+      }
+    }
+  } catch { /* Private mode/storage blocked: keep in-memory fallback. */ }
+  return memoryLoginCooldown
+}
+function saveLoginCooldown(value: HvLoginCooldown): void {
+  memoryLoginCooldown = value
+  try { window.localStorage.setItem(HV_LOGIN_LOCK_KEY, JSON.stringify(value)) }
+  catch { /* In-memory fallback still works within this page. */ }
+}
+function remainingLoginLockMs(): number {
+  return Math.max(0, readLoginCooldown().lockedUntil - Date.now())
+}
+function loginLockMessage(ms: number): string {
+  const seconds = Math.ceil(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const remainder = String(seconds % 60).padStart(2, '0')
+  return `Admin sign-in locked after 5 incorrect attempts. Try again in ${minutes}:${remainder}.`
+}
+function refreshLoginLockUI(): void {
+  const remaining = remainingLoginLockMs()
+  loginButton.disabled = loginRequestInProgress || remaining > 0
+  if (remaining > 0) {
+    loginMessage.textContent = loginLockMessage(remaining)
+  } else if (loginMessage.textContent.startsWith('Admin sign-in locked after 5 incorrect attempts.')) {
+    loginMessage.textContent = 'Sign-in is unlocked. You may try again.'
+  }
+}
+function recordFailedCredentials(): number {
+  const now = Date.now()
+  const previous = readLoginCooldown()
+  // A new rolling attempt window begins if the first failure was >10m ago.
+  const reset = !previous.firstFailureAt || now - previous.firstFailureAt >= HV_LOGIN_LOCK_MS
+  const attempts = (reset ? 0 : previous.attempts) + 1
+  const lockedUntil = attempts >= HV_LOGIN_MAX_FAILURES ? now + HV_LOGIN_LOCK_MS : 0
+  saveLoginCooldown({ attempts, firstFailureAt: reset ? now : previous.firstFailureAt, lockedUntil })
+  return Math.max(0, HV_LOGIN_MAX_FAILURES - attempts)
+}
+function clearLoginFailures(): void {
+  saveLoginCooldown({ attempts: 0, firstFailureAt: 0, lockedUntil: 0 })
+}
+function isInvalidCredentials(error: { message: string; code?: string }): boolean {
+  return error.code === 'invalid_credentials' || /invalid login credentials|invalid credentials|invalid email or password/i.test(error.message)
+}
+function readAdminActivity(): number {
+  try {
+    const value = Number(window.localStorage.getItem(HV_ADMIN_ACTIVITY_KEY))
+    if (Number.isFinite(value) && value > 0) return Math.max(value, memoryLastActivity)
+  } catch { /* Fall back to memory. */ }
+  return memoryLastActivity
+}
+function setAdminActivity(now = Date.now()): void {
+  memoryLastActivity = now
+  lastActivityWrite = now
+  try { window.localStorage.setItem(HV_ADMIN_ACTIVITY_KEY, String(now)) }
+  catch { /* Fall back to memory. */ }
+}
+function clearAdminActivity(): void {
+  memoryLastActivity = 0
+  lastActivityWrite = 0
+  try { window.localStorage.removeItem(HV_ADMIN_ACTIVITY_KEY) }
+  catch { /* Ignore unavailable storage. */ }
+}
+function recordAdminActivity(): void {
+  if (!adminAuthorized || dashboard.hidden || adminSignoutInProgress) return
+  const now = Date.now()
+  // Timers may be suspended in background tabs; a click after an expired
+  // inactivity period must not silently start a fresh login period.
+  const previous = readAdminActivity()
+  if (previous && now - previous >= HV_ADMIN_IDLE_MS) {
+    void signOutAdminForIdle()
+    return
+  }
+  // Avoid excessive storage writes from pointer-move events.
+  memoryLastActivity = now
+  if (now - lastActivityWrite >= 2000) setAdminActivity(now)
+}
+async function signOutAdminForIdle(): Promise<void> {
+  if (adminSignoutInProgress) return
+  adminSignoutInProgress = true
+  adminAuthorized = false
+  ++adminAuthCheckVersion // invalidate any in-flight membership checks
+  dashboard.hidden = true
+  loginView.hidden = false
+  bookings = []
+  clearAdminActivity()
+  try {
+    await supabase.auth.signOut()
+    await showSession()
+    loginMessage.textContent = 'Automatically signed out after 10 minutes of inactivity. Please sign in again.'
+  } catch {
+    loginMessage.textContent = 'Your admin session timed out. Please refresh and sign in again.'
+  } finally {
+    adminSignoutInProgress = false
+    refreshLoginLockUI()
+  }
+}
+function checkAdminIdle(): void {
+  if (!adminAuthorized || dashboard.hidden || adminSignoutInProgress) return
+  const last = readAdminActivity()
+  if (last && Date.now() - last >= HV_ADMIN_IDLE_MS) void signOutAdminForIdle()
+}
+// Interaction inside the admin dashboard counts as activity; background
+// token refresh, network traffic, and mere open tabs do not.
+for (const eventName of ['pointerdown', 'pointermove', 'keydown', 'touchstart', 'wheel', 'scroll', 'input']) {
+  dashboard.addEventListener(eventName, recordAdminActivity, { passive: true })
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAdminIdle() })
+window.addEventListener('focus', checkAdminIdle)
+window.addEventListener('storage', event => {
+  if (event.key === HV_LOGIN_LOCK_KEY) refreshLoginLockUI()
+  if (event.key === HV_ADMIN_ACTIVITY_KEY) checkAdminIdle()
+})
+// Continue checking even if mouse/keyboard is idle; handle suspended browser
+// tabs upon visibility/focus above. Timer is only UI/session management.
+window.setInterval(() => { refreshLoginLockUI(); checkAdminIdle() }, 1000)
+
+// Verify authorization against public.admin_users rather than merely checking
+// for a Supabase session. Server-side RLS protects private database records.
 async function showSession(): Promise<void> {
-  const { data: { session } } = await supabase.auth.getSession()
-  loginView.hidden = Boolean(session)
-  dashboard.hidden = !session
-  if (session) await loadBookings()
+  if (adminSignoutInProgress) return
+  const checkVersion = ++adminAuthCheckVersion
+  dashboard.hidden = true
+  loginView.hidden = false
+  adminAuthorized = false
+
+  const { data: userResult, error: userError } = await supabase.auth.getUser()
+  if (checkVersion !== adminAuthCheckVersion || adminSignoutInProgress) return
+  if (userError || !userResult.user) {
+    bookings = []
+    if (userError) loginMessage.textContent = 'Could not verify your sign-in. Please try again.'
+    return
+  }
+
+  const { data: adminMembership, error: adminError } = await supabase
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', userResult.user.id)
+    .maybeSingle()
+  if (checkVersion !== adminAuthCheckVersion || adminSignoutInProgress) return
+  if (adminError) {
+    bookings = []
+    loginMessage.textContent = 'Unable to verify administrator access. Please try again.'
+    return
+  }
+  if (!adminMembership) {
+    bookings = []
+    loginMessage.textContent = 'This account is not authorized to access the admin dashboard.'
+    await supabase.auth.signOut()
+    return
+  }
+
+  // On refresh/reopening an existing session, do NOT silently renew an expired
+  // inactivity window. A successful manual login sets activity explicitly.
+  if (!readAdminActivity()) setAdminActivity()
+  if (Date.now() - readAdminActivity() >= HV_ADMIN_IDLE_MS) {
+    // Allow the timeout procedure to run without displaying admin data.
+    adminAuthorized = true
+    void signOutAdminForIdle()
+    return
+  }
+
+  adminAuthorized = true
+  loginMessage.textContent = ''
+  loginView.hidden = true
+  dashboard.hidden = false
+  await loadBookings()
 }
 loginForm.addEventListener('submit', async event => {
   event.preventDefault()
+  if (loginRequestInProgress) return
+  if (remainingLoginLockMs() > 0) { refreshLoginLockUI(); return }
+
   const email = document.querySelector<HTMLInputElement>('#hv-email')!.value.trim()
-  const password = document.querySelector<HTMLInputElement>('#hv-password')!.value
-  const button = loginForm.querySelector<HTMLButtonElement>('button[type="submit"]')!
-  button.disabled = true; loginMessage.textContent = 'Signing in…'
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  button.disabled = false
-  if (error) { loginMessage.textContent = `Sign in failed: ${error.message}`; return }
-  loginMessage.textContent = ''
-  await showSession()
+  const passwordField = document.querySelector<HTMLInputElement>('#hv-password')!
+  const password = passwordField.value
+  loginRequestInProgress = true
+  loginMessage.textContent = 'Signing in…'
+  refreshLoginLockUI()
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      if (isInvalidCredentials(error)) {
+        const left = recordFailedCredentials()
+        loginMessage.textContent = left > 0
+          ? `Incorrect email or password. ${left} attempt(s) remaining before a 10-minute lock.`
+          : loginLockMessage(remainingLoginLockMs())
+      } else {
+        // Network/service errors are not counted as incorrect passwords.
+        loginMessage.textContent = `Sign in failed: ${error.message}`
+      }
+      return
+    }
+    // Correct credentials: reset the browser's failed-attempt counter.
+    clearLoginFailures()
+    setAdminActivity()
+    passwordField.value = ''
+    loginMessage.textContent = ''
+    await showSession()
+  } catch {
+    loginMessage.textContent = 'Sign-in service unavailable. Please try again.'
+  } finally {
+    loginRequestInProgress = false
+    refreshLoginLockUI()
+  }
 })
 document.querySelector('#hv-refresh')!.addEventListener('click', () => void (async () => { await loadBookings(); if (!document.querySelector('#hv-cancellations-section')!.hasAttribute('hidden')) await loadCancellationRequests() })())
-document.querySelector('#hv-logout')!.addEventListener('click', async () => { await supabase.auth.signOut(); bookings = []; await showSession() })
+document.querySelector('#hv-logout')!.addEventListener('click', async () => {
+  adminAuthorized = false
+  ++adminAuthCheckVersion
+  dashboard.hidden = true
+  clearAdminActivity()
+  await supabase.auth.signOut()
+  bookings = []
+  await showSession()
+})
 function resetBookingPageAndRender(): void {
   currentBookingPage = 1
   render()
@@ -1119,9 +1349,9 @@ roomFilter.addEventListener('change', resetBookingPageAndRender)
 pageSizeSelect.addEventListener('change', resetBookingPageAndRender)
 showArchivedBookings.addEventListener('change', resetBookingPageAndRender)
 showArchivedCancellations.addEventListener('change', renderCancellationRequests)
-supabase.auth.onAuthStateChange((_event, session) => {
-  loginView.hidden = Boolean(session)
-  dashboard.hidden = !session
-  if (session) window.setTimeout(() => void loadBookings(), 0)
+// Supabase can emit this callback while its auth state is locked.
+// Schedule the membership check outside the callback to avoid an auth deadlock.
+supabase.auth.onAuthStateChange(() => {
+  window.setTimeout(() => void showSession(), 0)
 })
 void showSession()
