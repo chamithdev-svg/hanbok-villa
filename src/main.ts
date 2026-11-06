@@ -1198,6 +1198,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </div>
 
   <!-- Footer bottom -->
+  
+  <!-- HANBOK VILLA legal policies: PayHere merchant review -->
+  <nav aria-label="Legal policies" class="hanbok-legal-footer" style="display:flex;flex-wrap:wrap;gap:12px 22px;justify-content:center;align-items:center;padding:18px 14px;background:#153a31;color:#fff;font-size:13px">
+    <a href="/terms.html" style="color:#f5eee1;text-decoration:underline">Terms &amp; Conditions</a>
+    <a href="/refund-policy.html" style="color:#f5eee1;text-decoration:underline">Cancellation &amp; Refund Policy</a>
+    <a href="/privacy-policy.html" style="color:#f5eee1;text-decoration:underline">Privacy Policy</a>
+  </nav>
   <div class="footer-bottom">
 
     <p>

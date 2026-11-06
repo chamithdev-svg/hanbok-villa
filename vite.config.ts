@@ -7,6 +7,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        terms: resolve(process.cwd(), 'terms.html'),
+        refundPolicy: resolve(process.cwd(), 'refund-policy.html'),
+        privacyPolicy: resolve(process.cwd(), 'privacy-policy.html'),
         main: resolve(process.cwd(), 'index.html'),
         booking: resolve(process.cwd(), 'booking.html'),
         gallery: resolve(process.cwd(), 'gallery.html'),
