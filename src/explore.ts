@@ -84,14 +84,14 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
     </p>
 
     <h1>
-      Explore Sri Lanka
+      Explore Hikkaduwa & Sri Lanka
     </h1>
 
     <div class="gold-line center-line"></div>
 
     <p>
-      Breathtaking places, rich culture and
-      unforgettable experiences beyond HANBOK Villa.
+      Discover Hikkaduwa beaches, Galle Fort and amazing
+      places across Sri Lanka during your stay at HANBOK VILLA.
     </p>
 
   </div>
@@ -125,8 +125,8 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
       <div class="gold-line center-line"></div>
 
       <p>
-        Beautiful beaches, historic cities and
-        unforgettable coastal experiences.
+        Explore the south coast from Hikkaduwa, including beautiful
+        beaches, historic Galle Fort and coastal destinations.
       </p>
 
     </div>
@@ -143,7 +143,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/hikkaduwa.jpg"
-            alt="Hikkaduwa Beach"
+            alt="Hikkaduwa Beach on the southern coast of Sri Lanka"
           >
 
         </div>
@@ -180,7 +180,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/galle.jpg"
-            alt="Galle Fort"
+            alt="Historic Galle Fort in southern Sri Lanka"
           >
 
         </div>
@@ -217,7 +217,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/unawatuna.jpg"
-            alt="Unawatuna Beach"
+            alt="Unawatuna Beach on the south coast of Sri Lanka"
           >
 
         </div>
@@ -254,7 +254,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/mirissa.jpg"
-            alt="Mirissa Beach"
+            alt="Mirissa Beach in southern Sri Lanka"
           >
 
         </div>
@@ -291,7 +291,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/bentota.jpg"
-            alt="Bentota Beach"
+            alt="Bentota Beach in Sri Lanka"
           >
 
         </div>
@@ -362,7 +362,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/ella.jpg"
-            alt="Ella Sri Lanka"
+            alt="Ella hill country in Sri Lanka"
           >
 
         </div>
@@ -398,7 +398,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/nuwara-eliya.jpg"
-            alt="Nuwara Eliya"
+            alt="Nuwara Eliya hill country in Sri Lanka"
           >
 
         </div>
@@ -434,7 +434,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/kandy.jpg"
-            alt="Kandy Sri Lanka"
+            alt="Kandy in Sri Lanka"
           >
 
         </div>
@@ -505,7 +505,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/sigiriya.jpg"
-            alt="Sigiriya Rock"
+            alt="Sigiriya Rock Fortress in Sri Lanka"
           >
 
         </div>
@@ -577,7 +577,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/yala.jpg"
-            alt="Yala National Park"
+            alt="Yala National Park in Sri Lanka"
           >
 
         </div>
@@ -648,7 +648,7 @@ document.querySelector<HTMLDivElement>('#explore-app')!.innerHTML = `
 
           <img
             src="./images/explore/arugam%20beach.jpg"
-            alt="Arugam Bay Beach"
+            alt="Arugam Bay Beach on Sri Lanka’s east coast"
           >
 
         </div>

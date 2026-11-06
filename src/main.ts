@@ -150,7 +150,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <p class="location">HIKKADUWA, SRI LANKA</p>
 
         <p class="hero-description">
-          Your peaceful escape surrounded by the beauty of Sri Lanka.
+          Enjoy a peaceful villa stay in Hikkaduwa, Sri Lanka, near Hikkaduwa Beach.
         </p>
 
         <a href="#about" class="explore-btn">
@@ -188,7 +188,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="about-image">
         <img
           src="./images/villa-placeholder.jpg"
-          alt="HANBOK Villa"
+          alt="HANBOK VILLA accommodation in Hikkaduwa, Sri Lanka"
         >
       </div>
 
@@ -202,14 +202,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <div class="gold-line"></div>
 
         <p class="about-text">
-          Experience the beauty and peaceful atmosphere of Sri Lanka
-          in our beautiful villa located near the beautiful coastal area of Hikkaduwa.
+          Relax at HANBOK VILLA, a peaceful villa in Hikkaduwa, Sri Lanka,
+          surrounded by greenery and near Hikkaduwa Beach.
         </p>
 
         <p class="about-text">
-          Our villa offers two comfortable bedrooms and can accommodate
-          up to six guests, making it perfect for families, couples,
-          and friends.
+          Choose a comfortable guest room or book the entire two-bedroom villa
+          for up to six guests, ideal for couples, families and friends.
         </p>
 
         <!-- Villa information -->
@@ -247,7 +246,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <p class="section-subtitle">ACCOMMODATION</p>
       <h2>Stay at<br>Hanbok Villa</h2>
       <div class="gold-line"></div>
-      <p class="rooms-villa-description">Enjoy a comfortable and peaceful stay near Hikkaduwa Beach. Choose one room or book the entire villa for your Sri Lankan getaway.</p>
+      <p class="rooms-villa-description">Stay at our two-bedroom villa near Hikkaduwa Beach. Book an individual guest room or the entire villa for a peaceful Hikkaduwa getaway.</p>
       <div class="rooms-amenities">
         <div class="rooms-amenity"><span>☕</span><strong>Breakfast</strong><small>Included</small></div>
         <div class="rooms-amenity"><span>🅿️</span><strong>Free Parking</strong></div>
@@ -279,7 +278,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card">
 
     <div class="room-image">
-      <img src="./images/room1.jpg" alt="Room One">
+      <img src="./images/room1.jpg" alt="Guest room at HANBOK VILLA in Hikkaduwa">
     </div>
 
     <div class="room-info">
@@ -328,7 +327,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="room-card villa-card">
 
     <div class="room-image">
-      <img src="./images/entire-villa.jpg" alt="Entire Villa">
+      <img src="./images/entire-villa.jpg" alt="Entire HANBOK VILLA accommodation in Hikkaduwa">
     </div>
 
     <div class="room-info">

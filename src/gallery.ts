@@ -81,16 +81,17 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
     <div class="gallery-hero-content">
 
       <p class="section-subtitle">
-        DISCOVER HANBOK VILLA
+        EXPLORE OUR HIKKADUWA VILLA
       </p>
 
-      <h1>Our Gallery</h1>
+      <h1>HANBOK VILLA Gallery</h1>
 
       <div class="gold-line center-line"></div>
 
       <p>
-        Explore the beautiful moments, peaceful surroundings,
-        and unforgettable experiences waiting for you.
+        Explore photos of our two-bedroom villa in Hikkaduwa, Sri Lanka.
+        See guest rooms, living spaces and the peaceful surroundings
+        before planning your stay near Hikkaduwa Beach.
       </p>
 
     </div>
@@ -187,8 +188,8 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
       <div class="gold-line center-line"></div>
 
       <p>
-        Take a look at the beautiful spaces and
-        unforgettable moments at Galle Villa.
+        Browse the rooms, shared spaces and outdoor areas at
+        HANBOK VILLA, Hikkaduwa, Sri Lanka.
       </p>
 
     </div>
@@ -231,7 +232,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
   <!-- Email button -->
   <a
-    href="mailto:info@gallevilla.com"
+    href="mailto:hanbokhikka@gmail.com"
     class="floating-btn floating-email"
     aria-label="Send Email"
   >
@@ -240,7 +241,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
 
   <!-- WhatsApp button -->
   <a
-    href="https://wa.me/94770000000"
+    href="https://wa.me/94725183824"
     target="_blank"
     class="floating-btn floating-whatsapp"
     aria-label="Chat on WhatsApp"
@@ -262,7 +263,7 @@ document.querySelector<HTMLDivElement>('#gallery-app')!.innerHTML = `
         <h3>HANBOK VILLA</h3>
 
         <p class="footer-location">
-          GALLE, SRI LANKA
+          HIKKADUWA, SRI LANKA
         </p>
 
         <p>
@@ -394,8 +395,8 @@ async function loadManagedGallery(): Promise<void> {
   managedGalleryGrid.innerHTML = data.map((media) => `
     <div class="gallery-page-item">
       ${media.media_type === 'video'
-        ? `<video src="${escapeHtml(media.image_url)}" controls playsinline preload="metadata" aria-label="${escapeHtml(media.caption || 'HANBOK Villa video')}"></video>`
-        : `<img src="${escapeHtml(media.image_url)}" alt="${escapeHtml(media.caption || 'HANBOK Villa')}" loading="lazy">`}
+        ? `<video src="${escapeHtml(media.image_url)}" controls playsinline preload="metadata" aria-label="${escapeHtml(media.caption || 'Video of HANBOK VILLA in Hikkaduwa, Sri Lanka')}"></video>`
+        : `<img src="${escapeHtml(media.image_url)}" alt="${escapeHtml(media.caption || 'Photo of HANBOK VILLA in Hikkaduwa, Sri Lanka')}" loading="lazy">`}
       ${media.caption ? `<p class="gallery-photo-caption">${escapeHtml(media.caption)}</p>` : ''}
     </div>
   `).join('')
@@ -404,6 +405,7 @@ async function loadManagedGallery(): Promise<void> {
     image.addEventListener('click', () => {
       if (lightbox && lightboxImage) {
         lightboxImage.src = image.src
+        lightboxImage.alt = image.alt
         lightbox.classList.add('active')
       }
     })
