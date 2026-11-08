@@ -632,11 +632,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Pickup</h3>
 
       <p>
-        Choose complimentary airport pickup for your booking. Only one airport transfer (pickup or drop-off) is free per booking.
+        Airport pickup can be arranged on request. Additional charges apply.
       </p>
 
       <span class="extra-charge">
-        Free if selected as your one complimentary airport transfer
+        Additional charges apply
       </span>
 
     </div>
@@ -651,11 +651,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Drop-off</h3>
 
       <p>
-        Choose complimentary airport drop-off for your booking. Only one airport transfer (pickup or drop-off) is free per booking.
+        Airport drop-off can be arranged on request. Additional charges apply.
       </p>
 
       <span class="extra-charge">
-        Free if selected as your one complimentary airport transfer
+        Additional charges apply
       </span>
 
     </div>
@@ -810,11 +810,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <h3>Airport Transfer</h3>
 
       <p>
-        One airport transfer is included per booking. Choose either pickup or drop-off; both are not complimentary.
+        Airport pickup and drop-off can be arranged on request. Additional charges apply.
       </p>
 
       <span>
-        One-way transfer included (pickup OR drop-off)
+        Airport transfers available at an additional charge
       </span>
 
     </div>
